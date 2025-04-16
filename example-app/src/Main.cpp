@@ -1,9 +1,10 @@
 #include "Pch.hpp"
-#include <Natrium-Core/Core.hpp>
+#include <Natrium-Core/Logger.hpp>
 
 int main(int argc, char* argv[])
 {
-	Na::HelloWorld();
+	Na::Logger<> log{"ExampleApp", &std::clog};
+	log(Na::Info, "Hello, world!");
 
 	return 0;
 }
