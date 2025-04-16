@@ -1,0 +1,3 @@
+[submodule "natrium-cpp"]
+	path = natrium-cpp
+	url = https://github.com/goofyahhvic/natrium-cpp.git
