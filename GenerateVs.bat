@@ -1,0 +1,1 @@
+python3 Generate.py msbuild
