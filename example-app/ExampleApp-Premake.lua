@@ -19,11 +19,15 @@ project "ExampleApp"
     includedirs {
         "src/",
         "../natrium-cpp/include/",
-        "../natrium-cpp/%{IncludeDirectories.fmt}"
+        "../natrium-cpp/%{IncludeDirectories.fmt}",
+        "../natrium-cpp/%{IncludeDirectories.glm}",
     }
     links {
-        "NatriumCore",
+        "Natrium-Core",
+        "Natrium-Renderer",
         "%{Libraries.fmt}",
+        "%{Libraries.stb}",
+        "%{Libraries.glfw}",
     }
 
     filter "system:linux"
