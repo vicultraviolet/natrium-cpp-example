@@ -3,6 +3,7 @@
 #include <Natrium-Core/Logger.hpp>
 
 #include <Natrium-Core/Window.hpp>
+#include <Natrium-Renderer/Renderer.hpp>
 
 int main(int argc, char* argv[])
 {
@@ -11,24 +12,36 @@ int main(int argc, char* argv[])
 	Na::Logger<> logger{"ExampleApp", &std::clog};
 	logger(Na::Info, "Hello, world!");
 
-	bool should_close = false;
-
 	Na::Window window(1280, 720, "ExampleApp");
+	Na::Renderer renderer(window);
 
+	bool should_close = false;
 	while (!should_close)
 	{
+		std::this_thread::sleep_for(1ms);
+
 		for (Na::Event& e : Na::PollEvents())
 		{
-			if (e.type == Na::Event_Type::WindowClosed)
+			switch (e.type)
 			{
+			case Na::Event_Type::WindowClosed:
 				should_close = true;
+				break;
+			case Na::Event_Type::WindowResized:
+				renderer.update_size();
 				break;
 			}
 		}
+		if (window.width() == 0 || window.height() == 0)
+			continue;
 
-		std::this_thread::sleep_for(1ms);
+		renderer.clear();
+
+		renderer.present();
 	}
+	Na::VkContext::GetLogicalDevice().waitIdle();
 
+	renderer.destroy();
 	window.destroy();
 
 	Na::Context::Shutdown();
