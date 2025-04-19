@@ -4,16 +4,24 @@
 
 #include <Natrium-Core/Window.hpp>
 #include <Natrium-Renderer/Renderer.hpp>
+#include <Natrium-Renderer/Shader.hpp>
 
 int main(int argc, char* argv[])
 {
 	Na::Context context = Na::Context::Initialize();
+
+	std::filesystem::path workspace_dir = context.GetExecDir() / "../../../";
+	workspace_dir.make_preferred();
+	std::filesystem::path shader_dir = workspace_dir / "assets/shaders/";
 
 	Na::Logger<> logger{"ExampleApp", &std::clog};
 	logger(Na::Info, "Hello, world!");
 
 	Na::Window window(1280, 720, "ExampleApp");
 	Na::Renderer renderer(window);
+
+	Na::Shader vertex_shader(shader_dir / "vertex.glsl", Na::ShaderStageBits::Vertex);
+	Na::Shader fragment_shader(shader_dir / "fragment.glsl", Na::ShaderStageBits::Fragment);
 
 	bool should_close = false;
 	while (!should_close)
@@ -40,6 +48,9 @@ int main(int argc, char* argv[])
 		renderer.present();
 	}
 	Na::VkContext::GetLogicalDevice().waitIdle();
+
+	fragment_shader.destroy();
+	vertex_shader.destroy();
 
 	renderer.destroy();
 	window.destroy();
