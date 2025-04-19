@@ -23,17 +23,17 @@ project "ExampleApp"
         "../natrium-cpp/%{IncludeDirectories.glm}",
     }
     links {
-        "Natrium-Core",
         "Natrium-Renderer",
-        "%{Libraries.fmt}",
+        "Natrium-Core",
         "%{Libraries.stb}",
         "%{Libraries.glfw}",
+        "%{Libraries.fmt}",
     }
 
     filter "system:linux"
         links {
             "vulkan",
-            "shaderc"
+            "shaderc_combined"
         }
 
         defines { "NA_PLATFORM_LINUX" }
