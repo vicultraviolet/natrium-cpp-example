@@ -3,8 +3,25 @@
 #include <Natrium-Core/Logger.hpp>
 
 #include <Natrium-Core/Window.hpp>
+#include <Natrium-Renderer/Image.hpp>
 #include <Natrium-Renderer/Renderer.hpp>
 #include <Natrium-Renderer/Shader.hpp>
+#include <Natrium-Renderer/Pipeline.hpp>
+#include <Natrium-Renderer/Buffers/VertexBuffer.hpp>
+#include <Natrium-Renderer/Buffers/IndexBuffer.hpp>
+#include <Natrium-Renderer/Buffers/UniformBuffer.hpp>
+#include <Natrium-Renderer/Texture.hpp>
+
+struct Vertex {
+	glm::vec3 pos;
+	glm::vec2 tex_coord;
+};
+
+struct UniformBufferObject {
+	alignas(16) glm::mat4 model;
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 proj;
+};
 
 int main(int argc, char* argv[])
 {
@@ -12,7 +29,7 @@ int main(int argc, char* argv[])
 
 	std::filesystem::path workspace_dir = context.GetExecDir() / "../../../";
 	workspace_dir.make_preferred();
-	std::filesystem::path shader_dir = workspace_dir / "assets/shaders/";
+	std::filesystem::path assets_dir = workspace_dir / "assets/";
 
 	Na::Logger<> logger{"ExampleApp", &std::clog};
 	logger(Na::Info, "Hello, world!");
@@ -20,8 +37,100 @@ int main(int argc, char* argv[])
 	Na::Window window(1280, 720, "ExampleApp");
 	Na::Renderer renderer(window);
 
-	Na::Shader vertex_shader(shader_dir / "vertex.glsl", Na::ShaderStageBits::Vertex);
-	Na::Shader fragment_shader(shader_dir / "fragment.glsl", Na::ShaderStageBits::Fragment);
+	Na::Shader vertex_shader(assets_dir / "shaders/vertex.glsl", Na::ShaderStageBits::Vertex);
+	Na::Shader fragment_shader(assets_dir / "shaders/fragment.glsl", Na::ShaderStageBits::Fragment);
+
+	Na::Pipeline pipeline(
+		renderer,
+		{ vertex_shader.pipeline_shader_info(), fragment_shader.pipeline_shader_info() },
+		Na::VertexBufferLayout{
+			Na::ShaderAttribute{
+				0, // location
+				Na::ShaderAttributeType::Vec3
+			},
+			Na::ShaderAttribute{
+				1, // location
+				Na::ShaderAttributeType::Vec2
+			}
+		},
+		Na::ShaderUniformLayout{
+			Na::ShaderUniform{
+				0, // binding
+				Na::ShaderUniformType::UniformBuffer,
+				Na::ShaderStageBits::Vertex
+			},
+			Na::ShaderUniform{
+				1, // binding
+				Na::ShaderUniformType::TextureSampler,
+				Na::ShaderStageBits::Fragment
+			}
+		}
+	);
+	renderer.bind_pipeline(pipeline.handle());
+
+	Vertex VBO1[24] = {
+		{ { -0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f } }, // 0
+		{ {  0.5f, -0.5f,  0.5f }, { 1.0f, 0.0f } }, // 1
+		{ {  0.5f,  0.5f,  0.5f }, { 1.0f, 1.0f } }, // 2
+		{ { -0.5f,  0.5f,  0.5f }, { 0.0f, 1.0f } }, // 3
+
+		{ {  0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f } }, // 4
+		{ { -0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f } }, // 5
+		{ { -0.5f,  0.5f, -0.5f }, { 1.0f, 1.0f } }, // 6
+		{ {  0.5f,  0.5f, -0.5f }, { 0.0f, 1.0f } }, // 7
+
+		{ { -0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f } }, // 8
+		{ { -0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f } }, // 9
+		{ { -0.5f,  0.5f,  0.5f }, { 0.0f, 1.0f } }, // 10
+		{ { -0.5f,  0.5f, -0.5f }, { 1.0f, 1.0f } }, // 11
+
+		{ {  0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f } }, // 12
+		{ {  0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f } }, // 13
+		{ {  0.5f,  0.5f, -0.5f }, { 1.0f, 1.0f } }, // 14
+		{ {  0.5f,  0.5f,  0.5f }, { 0.0f, 1.0f } }, // 15
+
+		{ { -0.5f,  0.5f,  0.5f }, { 0.0f, 1.0f } }, // 16
+		{ {  0.5f,  0.5f,  0.5f }, { 1.0f, 1.0f } }, // 17
+		{ {  0.5f,  0.5f, -0.5f }, { 1.0f, 0.0f } }, // 18
+		{ { -0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f } }, // 19
+
+		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f } }, // 20
+		{ {  0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f } }, // 21
+		{ {  0.5f, -0.5f,  0.5f }, { 1.0f, 1.0f } }, // 22
+		{ { -0.5f, -0.5f,  0.5f }, { 0.0f, 1.0f } }  // 23
+	};
+
+	u32 IBO1[36] = {
+		// Front face (0, 1, 2, 3)
+		0, 1, 2,
+		2, 3, 0,
+		
+		// Back face (4, 5, 6, 7)
+		4, 5, 6,
+		6, 7, 4,
+		
+		// Left face (8, 9, 10, 11)
+		8, 9, 10,
+		10, 11, 8,
+		
+		// Right face (12, 13, 14, 15)
+		12, 13, 14,
+		14, 15, 12,
+		
+		// Top face (16, 17, 18, 19)
+		16, 17, 18,
+		18, 19, 16,
+		
+		// Bottom face (20, 21, 22, 23)
+		20, 21, 22,
+		22, 23, 20
+	};
+
+	Na::VertexBuffer   vertex_buffer(VBO1, 24 * sizeof(Vertex), 24, renderer);
+	Na::IndexBuffer     index_buffer(IBO1, 36, renderer);
+	Na::UniformBuffer uniform_buffer(sizeof(UniformBufferObject), 0, renderer);
+	Na::Image  img = Na::Image::Load(assets_dir / "texture.png");
+	Na::Texture              texture(img, 1, renderer);
 
 	bool should_close = false;
 	while (!should_close)
@@ -43,11 +152,33 @@ int main(int argc, char* argv[])
 		if (window.width() == 0 || window.height() == 0)
 			continue;
 
-		renderer.clear();
+		static auto x_StartTime = std::chrono::high_resolution_clock::now();
+
+		auto current_time = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(current_time - x_StartTime).count();
+
+		UniformBufferObject ubo{};
+		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.view = glm::lookAt(glm::vec3(2.5f, 2.5f, 2.5f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.proj = glm::perspective(glm::radians(45.0f), (float)window.width() / (float)window.height(), 0.1f, 10.0f);
+		ubo.proj[1] *= -1;
+		uniform_buffer.set_data(&ubo, renderer);
+
+		renderer.clear(glm::vec4(0.11f, 0.11f, 0.13f, 1.0f));
+
+		index_buffer.draw(vertex_buffer, renderer);
 
 		renderer.present();
 	}
 	Na::VkContext::GetLogicalDevice().waitIdle();
+
+	vertex_buffer.destroy();
+	index_buffer.destroy();
+	uniform_buffer.destroy();
+	img.destroy();
+	texture.destroy();
+
+	pipeline.destroy();
 
 	fragment_shader.destroy();
 	vertex_shader.destroy();
