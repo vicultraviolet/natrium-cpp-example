@@ -132,6 +132,8 @@ int main(int argc, char* argv[])
 	Na::Image  img = Na::Image::Load(assets_dir / "texture.png");
 	Na::Texture              texture(img, 1, renderer);
 
+	std::chrono::steady_clock::time_point now, last;
+
 	bool should_close = false;
 	while (!should_close)
 	{
@@ -151,10 +153,14 @@ int main(int argc, char* argv[])
 		if (window.minimized())
 			continue;
 
-		static auto x_StartTime = std::chrono::high_resolution_clock::now();
+		now = std::chrono::steady_clock::now();
+		auto difference = std::chrono::duration_cast<std::chrono::microseconds>(now - last);
+		last = now;
+		double dt = difference.count() / 1e+6;
+		logger.fmt(Na::Trace, "fps: {}", (u32)(1.0 / dt));
 
-		auto current_time = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(current_time - x_StartTime).count();
+		static auto x_StartTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(now - x_StartTime).count();
 
 		UniformBufferObject ubo{};
 		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
