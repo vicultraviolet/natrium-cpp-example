@@ -12,12 +12,17 @@
 #include <Natrium-Renderer/Buffers/UniformBuffer.hpp>
 #include <Natrium-Renderer/Texture.hpp>
 
-struct Vertex {
+struct InterleavedVertex {
 	glm::vec3 pos;
 	glm::vec2 tex_coord;
 };
 
-struct UniformBufferObject {
+struct NonInterleavedVertexData {
+	glm::vec3 positions[24];
+	glm::vec2 tex_coords[24];
+};
+
+struct UniformBufferData {
 	alignas(16) glm::mat4 model;
 	alignas(16) glm::mat4 view;
 	alignas(16) glm::mat4 proj;
@@ -43,15 +48,17 @@ int main(int argc, char* argv[])
 	Na::Pipeline pipeline(
 		renderer,
 		{ vertex_shader.pipeline_shader_info(), fragment_shader.pipeline_shader_info() },
-		Na::VertexBufferLayout{
-			Na::ShaderAttribute{
-				0, // location
-				Na::ShaderAttributeType::Vec3
+		Na::ShaderAttributeLayout{
+			Na::ShaderAttributeBinding{ // binding 0
+				Na::ShaderAttribute{
+					0, // location
+					Na::ShaderAttributeType::Vec3
+				},
+				Na::ShaderAttribute{
+					1, // location
+					Na::ShaderAttributeType::Vec2
+				}
 			},
-			Na::ShaderAttribute{
-				1, // location
-				Na::ShaderAttributeType::Vec2
-			}
 		},
 		Na::ShaderUniformLayout{
 			Na::ShaderUniform{
@@ -68,39 +75,89 @@ int main(int argc, char* argv[])
 	);
 	renderer.bind_pipeline(pipeline.handle());
 
-	Vertex VBO1[24] = {
-		{ { -0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f } }, // 0
-		{ {  0.5f, -0.5f,  0.5f }, { 1.0f, 0.0f } }, // 1
-		{ {  0.5f,  0.5f,  0.5f }, { 1.0f, 1.0f } }, // 2
-		{ { -0.5f,  0.5f,  0.5f }, { 0.0f, 1.0f } }, // 3
+	InterleavedVertex interleaved_vertex_data[24] = {
+		{ glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f) }, // 0
+		{ glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec2(1.0f, 0.0f) }, // 1
+		{ glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 1.0f) }, // 2
+		{ glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f) }, // 3
+		{ glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f) }, // 4
+		{ glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f) }, // 5
+		{ glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f) }, // 6
+		{ glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f) }, // 7
+		{ glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f) }, // 8
+		{ glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f) }, // 9
+		{ glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f) }, // 10
+		{ glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f) }, // 11
+		{ glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f) }, // 12
+		{ glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f) }, // 13
+		{ glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f) }, // 14
+		{ glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f) }, // 15
+		{ glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f) }, // 16
+		{ glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 1.0f) }, // 17
+		{ glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 0.0f) }, // 18
+		{ glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 0.0f) }, // 19
+		{ glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f) }, // 20
+		{ glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f) }, // 21
+		{ glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec2(1.0f, 1.0f) }, // 22
+		{ glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 1.0f) }  // 23
+	};														  
 
-		{ {  0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f } }, // 4
-		{ { -0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f } }, // 5
-		{ { -0.5f,  0.5f, -0.5f }, { 1.0f, 1.0f } }, // 6
-		{ {  0.5f,  0.5f, -0.5f }, { 0.0f, 1.0f } }, // 7
-
-		{ { -0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f } }, // 8
-		{ { -0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f } }, // 9
-		{ { -0.5f,  0.5f,  0.5f }, { 0.0f, 1.0f } }, // 10
-		{ { -0.5f,  0.5f, -0.5f }, { 1.0f, 1.0f } }, // 11
-
-		{ {  0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f } }, // 12
-		{ {  0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f } }, // 13
-		{ {  0.5f,  0.5f, -0.5f }, { 1.0f, 1.0f } }, // 14
-		{ {  0.5f,  0.5f,  0.5f }, { 0.0f, 1.0f } }, // 15
-
-		{ { -0.5f,  0.5f,  0.5f }, { 0.0f, 1.0f } }, // 16
-		{ {  0.5f,  0.5f,  0.5f }, { 1.0f, 1.0f } }, // 17
-		{ {  0.5f,  0.5f, -0.5f }, { 1.0f, 0.0f } }, // 18
-		{ { -0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f } }, // 19
-
-		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f } }, // 20
-		{ {  0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f } }, // 21
-		{ {  0.5f, -0.5f,  0.5f }, { 1.0f, 1.0f } }, // 22
-		{ { -0.5f, -0.5f,  0.5f }, { 0.0f, 1.0f } }  // 23
+	NonInterleavedVertexData non_interleaved_vertex_data{
+		.positions = {
+			glm::vec3(-0.5f, -0.5f,  0.5f),
+			glm::vec3(0.5f, -0.5f,  0.5f),
+			glm::vec3(0.5f,  0.5f,  0.5f),
+			glm::vec3(-0.5f,  0.5f,  0.5f),
+			glm::vec3(0.5f, -0.5f, -0.5f),
+			glm::vec3(-0.5f, -0.5f, -0.5f),
+			glm::vec3(-0.5f,  0.5f, -0.5f),
+			glm::vec3(0.5f,  0.5f, -0.5f),
+			glm::vec3(-0.5f, -0.5f, -0.5f),
+			glm::vec3(-0.5f, -0.5f,  0.5f),
+			glm::vec3(-0.5f,  0.5f,  0.5f),
+			glm::vec3(-0.5f,  0.5f, -0.5f),
+			glm::vec3(0.5f, -0.5f,  0.5f),
+			glm::vec3(0.5f, -0.5f, -0.5f),
+			glm::vec3(0.5f,  0.5f, -0.5f),
+			glm::vec3(0.5f,  0.5f,  0.5f),
+			glm::vec3(-0.5f,  0.5f,  0.5f),
+			glm::vec3(0.5f,  0.5f,  0.5f),
+			glm::vec3(0.5f,  0.5f, -0.5f),
+			glm::vec3(-0.5f,  0.5f, -0.5f),
+			glm::vec3(-0.5f, -0.5f, -0.5f),
+			glm::vec3(0.5f, -0.5f, -0.5f),
+			glm::vec3(0.5f, -0.5f,  0.5f),
+			glm::vec3(-0.5f, -0.5f,  0.5f)
+		},
+		.tex_coords = {
+			glm::vec2(0.0f, 0.0f),
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(0.0f, 1.0f),
+			glm::vec2(0.0f, 0.0f),
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(0.0f, 1.0f),
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(0.0f, 0.0f),
+			glm::vec2(0.0f, 1.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(0.0f, 0.0f),
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(0.0f, 1.0f),
+			glm::vec2(0.0f, 1.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(0.0f, 0.0f),
+			glm::vec2(0.0f, 0.0f),
+			glm::vec2(1.0f, 0.0f),
+			glm::vec2(1.0f, 1.0f),
+			glm::vec2(0.0f, 1.0f)
+		}
 	};
 
-	u32 IBO1[36] = {
+	u32 index_data[36] = {
 		// Front face (0, 1, 2, 3)
 		0, 1, 2,
 		2, 3, 0,
@@ -126,9 +183,9 @@ int main(int argc, char* argv[])
 		22, 23, 20
 	};
 
-	Na::VertexBuffer   vertex_buffer(VBO1, 24 * sizeof(Vertex), 24, renderer);
-	Na::IndexBuffer     index_buffer(IBO1, 36, renderer);
-	Na::UniformBuffer uniform_buffer(sizeof(UniformBufferObject), 0, renderer);
+	Na::VertexBuffer   vertex_buffer(&interleaved_vertex_data, 24 * sizeof(InterleavedVertex), 24, renderer);
+	Na::IndexBuffer     index_buffer(index_data, 36, renderer);
+	Na::UniformBuffer uniform_buffer(sizeof(UniformBufferData), 0, renderer);
 	Na::Image  img = Na::Image::Load(assets_dir / "texture.png");
 	Na::Texture              texture(img, 1, renderer);
 
@@ -150,8 +207,6 @@ int main(int argc, char* argv[])
 				break;
 			}
 		}
-		if (window.minimized())
-			continue;
 
 		now = std::chrono::steady_clock::now();
 		auto difference = std::chrono::duration_cast<std::chrono::microseconds>(now - last);
@@ -159,15 +214,32 @@ int main(int argc, char* argv[])
 		double dt = difference.count() / 1e+6;
 		logger.fmt(Na::Trace, "fps: {}", (u32)(1.0 / dt));
 
+		if (window.minimized())
+			continue;
+
 		static auto x_StartTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(now - x_StartTime).count();
 
-		UniformBufferObject ubo{};
-		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.view = glm::lookAt(glm::vec3(2.5f, 2.5f, 2.5f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.proj = glm::perspective(glm::radians(45.0f), (float)window.width() / (float)window.height(), 0.1f, 10.0f);
-		ubo.proj[1] *= -1;
-		uniform_buffer.set_data(&ubo, renderer);
+		UniformBufferData uniform_buffer_data{
+			.model = glm::rotate(
+				glm::mat4(1.0f),
+				time * glm::radians(90.0f),
+				glm::vec3(0.0f, 0.0f, 1.0f)
+			),
+			.view = glm::lookAt(
+				glm::vec3(2.5f, 2.5f, 2.5f),
+				glm::vec3(0.0f, 0.0f, 0.0f),
+				glm::vec3(0.0f, 0.0f, 1.0f)
+			),
+			.proj = glm::perspective(
+				glm::radians(45.0f),
+				(float)window.width() / (float)window.height(),
+				0.1f, 10.0f
+			)
+		};
+		uniform_buffer_data.proj[1] *= -1;
+
+		uniform_buffer.set_data(&uniform_buffer_data, renderer);
 
 		if(!renderer.clear(glm::vec4(0.11f, 0.11f, 0.13f, 1.0f)))
 			continue;
