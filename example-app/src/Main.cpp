@@ -145,11 +145,10 @@ int main(int argc, char* argv[])
 				should_close = true;
 				break;
 			case Na::Event_Type::WindowResized:
-				renderer.update_size();
 				break;
 			}
 		}
-		if (window.width() == 0 || window.height() == 0)
+		if (window.minimized())
 			continue;
 
 		static auto x_StartTime = std::chrono::high_resolution_clock::now();
@@ -164,7 +163,8 @@ int main(int argc, char* argv[])
 		ubo.proj[1] *= -1;
 		uniform_buffer.set_data(&ubo, renderer);
 
-		renderer.clear(glm::vec4(0.11f, 0.11f, 0.13f, 1.0f));
+		if(!renderer.clear(glm::vec4(0.11f, 0.11f, 0.13f, 1.0f)))
+			continue;
 
 		index_buffer.draw(vertex_buffer, renderer);
 
