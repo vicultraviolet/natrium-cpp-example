@@ -71,6 +71,12 @@ int main(int argc, char* argv[])
 				Na::ShaderUniformType::TextureSampler,
 				Na::ShaderStageBits::Fragment
 			}
+		},
+		Na::PushConstantLayout{
+			Na::PushConstant{
+				Na::ShaderStageBits::Vertex,
+				sizeof(UniformBufferData)
+			}
 		}
 	);
 	renderer.bind_pipeline(pipeline.handle());
@@ -243,6 +249,14 @@ int main(int argc, char* argv[])
 
 		if(!renderer.clear(glm::vec4(0.11f, 0.11f, 0.13f, 1.0f)))
 			continue;
+
+		renderer.set_push_constant(
+			Na::PushConstant{
+				Na::ShaderStageBits::Vertex,
+				sizeof(UniformBufferData)
+			},
+			&uniform_buffer_data
+		);
 
 		index_buffer.draw(vertex_buffer, renderer);
 
