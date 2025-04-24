@@ -9,12 +9,6 @@ layout(push_constant, std430) uniform pc {
     mat4 proj;
 };
 
-layout(binding = 0) uniform Transform {
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-} u_Transform;
-
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec2 a_TexCoord;
 
