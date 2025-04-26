@@ -7,38 +7,48 @@ namespace ExampleApp {
 		glm::vec2 tex_coord;
 	};
 
-	struct UniformBufferData {
-		alignas(16) glm::mat4 model;
-		alignas(16) glm::mat4 view;
-		alignas(16) glm::mat4 proj;
+	struct InterleavedInstance {
+		glm::vec3 pos;
+		float scale;
 	};
 
-	static std::array<InterleavedVertex, 24> interleavedVertexData = {
-		InterleavedVertex(glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f)),
-		InterleavedVertex(glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec2(1.0f, 0.0f)),
-		InterleavedVertex(glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 1.0f)),
-		InterleavedVertex(glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f)),
-		InterleavedVertex(glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f)),
-		InterleavedVertex(glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f)),
-		InterleavedVertex(glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f)),
-		InterleavedVertex(glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f)),
-		InterleavedVertex(glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f)),
-		InterleavedVertex(glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f)),
-		InterleavedVertex(glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f)),
-		InterleavedVertex(glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f)),
-		InterleavedVertex(glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f)),
-		InterleavedVertex(glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f)),
-		InterleavedVertex(glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f)),
-		InterleavedVertex(glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f)),
-		InterleavedVertex(glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f)),
-		InterleavedVertex(glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 1.0f)),
-		InterleavedVertex(glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 0.0f)),
-		InterleavedVertex(glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 0.0f)),
-		InterleavedVertex(glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f)),
-		InterleavedVertex(glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f)),
-		InterleavedVertex(glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec2(1.0f, 1.0f)),
-		InterleavedVertex(glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 1.0f))
+	struct PushConstantData {
+		alignas(16) glm::mat4 view;
+		alignas(16) glm::mat4 proj;
+		alignas(16) glm::mat4 model;
 	};
+
+	struct VertexBufferData {
+		std::array<InterleavedVertex, 24> vertex_data = {
+			InterleavedVertex(glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f)),
+			InterleavedVertex(glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec2(1.0f, 0.0f)),
+			InterleavedVertex(glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 1.0f)),
+			InterleavedVertex(glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f)),
+			InterleavedVertex(glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f)),
+			InterleavedVertex(glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f)),
+			InterleavedVertex(glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f)),
+			InterleavedVertex(glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 1.0f)),
+			InterleavedVertex(glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f)),
+			InterleavedVertex(glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f)),
+			InterleavedVertex(glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f)),
+			InterleavedVertex(glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f)),
+			InterleavedVertex(glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 0.0f)),
+			InterleavedVertex(glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f)),
+			InterleavedVertex(glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 1.0f)),
+			InterleavedVertex(glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f)),
+			InterleavedVertex(glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec2(0.0f, 1.0f)),
+			InterleavedVertex(glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec2(1.0f, 1.0f)),
+			InterleavedVertex(glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec2(1.0f, 0.0f)),
+			InterleavedVertex(glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec2(0.0f, 0.0f)),
+			InterleavedVertex(glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec2(0.0f, 0.0f)),
+			InterleavedVertex(glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec2(1.0f, 0.0f)),
+			InterleavedVertex(glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec2(1.0f, 1.0f)),
+			InterleavedVertex(glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec2(0.0f, 1.0f))
+		};
+		[[nodiscard]] inline u32 size(void) const { return (u32)vertex_data.size() * sizeof(InterleavedVertex); }
+	};
+	static VertexBufferData vertexBufferData{};
+	
 	static std::array<u32, 36> indexData = {
 		0, 1, 2,
 		2, 3, 0,
@@ -56,39 +66,63 @@ namespace ExampleApp {
 
 	Game::Game(void)
 	: m_Window(1280, 720, "ExampleApp"),
-	m_Renderer(m_Window)
+	m_Renderer(m_Window),
+	m_Camera{glm::vec3(2.5f, 2.5f, 2.5f), glm::vec3(0.0f, 0.0f, 0.1f), 45.0f}
 	{
 		std::filesystem::path assets_dir = Na::Context::GetExecDir() / "../../../assets/";
 
 		Na::Shader vertex_shader(assets_dir / "shaders/vertex.glsl", Na::ShaderStageBits::Vertex);
 		Na::Shader fragment_shader(assets_dir / "shaders/fragment.glsl", Na::ShaderStageBits::Fragment);
 
+		Na::ShaderAttributeBinding binding0{
+			.binding = 0,
+			.input_rate = Na::AttributeInputRate::Vertex,
+			.attributes = {
+				Na::ShaderAttribute{
+					.location = 0,
+					.type = Na::ShaderAttributeType::Vec3
+				},
+				Na::ShaderAttribute{
+					.location = 1,
+					.type = Na::ShaderAttributeType::Vec2
+				}
+			}
+		};
+		Na::ShaderAttributeBinding binding1{
+			.binding = 1,
+			.input_rate = Na::AttributeInputRate::Instance,
+			.attributes = {
+				Na::ShaderAttribute{
+					.location = 2,
+					.type = Na::ShaderAttributeType::Vec3
+				},
+				Na::ShaderAttribute{
+					.location = 3,
+					.type = Na::ShaderAttributeType::Float
+				}
+			}
+		};
+
 		m_Pipeline = Na::Pipeline(
 			m_Renderer,
-			{ vertex_shader.pipeline_shader_info(), fragment_shader.pipeline_shader_info() },
+			Na::PipelineShaderInfos{
+				vertex_shader.pipeline_shader_info(),
+				fragment_shader.pipeline_shader_info()
+			},
 			Na::ShaderAttributeLayout{
-				Na::ShaderAttributeBinding{ // binding 0
-					Na::ShaderAttribute{
-						0, // location
-						Na::ShaderAttributeType::Vec3
-					},
-					Na::ShaderAttribute{
-						1, // location
-						Na::ShaderAttributeType::Vec2
-					}
-				},
+				binding0
 			},
 			Na::ShaderUniformLayout{
 				Na::ShaderUniform{
-					0, // binding
-					Na::ShaderUniformType::TextureSampler,
-					Na::ShaderStageBits::Fragment
+					.binding = 0,
+					.type = Na::ShaderUniformType::Texture,
+					.shader_stage = Na::ShaderStageBits::Fragment
 				}
 			},
 			Na::PushConstantLayout{
-				Na::PushConstant{
-					Na::ShaderStageBits::Vertex,
-					sizeof(UniformBufferData)
+				Na::PushConstant {
+					.shader_stage = Na::ShaderStageBits::Vertex,
+					.size = sizeof(PushConstantData)
 				}
 			}
 		);
@@ -98,12 +132,7 @@ namespace ExampleApp {
 
 		m_Renderer.bind_pipeline(m_Pipeline.handle());
 
-		m_Vbo = Na::VertexBuffer(
-			(u32)interleavedVertexData.size(),
-			sizeof(InterleavedVertex),
-			interleavedVertexData.data(),
-			m_Renderer
-		);
+		m_Vbo = Na::VertexBuffer(vertexBufferData.size(), &vertexBufferData, m_Renderer);
 		m_Ibo = Na::IndexBuffer((u32)indexData.size(), indexData.data(), m_Renderer);
 
 		Na::Image img = Na::Image::Load(assets_dir / "texture.png");
@@ -120,6 +149,7 @@ namespace ExampleApp {
 
 	void Game::on_event(Na::Event& e)
 	{
+		m_Input.on_event(e);
 		switch (e.type)
 		{
 		case Na::Event_Type::WindowClosed:
@@ -130,6 +160,36 @@ namespace ExampleApp {
 
 	void Game::update(double dt)
 	{
+		float amount = 3.0f * (float)dt;
+		if (m_Input.key(NA_KEY_W))
+		{
+			m_Camera.pos.x -= amount;
+			m_Camera.eye.x -= amount;
+			m_Camera.pos.y -= amount;
+			m_Camera.eye.y -= amount;
+		}
+		if (m_Input.key(NA_KEY_A))
+		{
+			m_Camera.pos.y -= amount;
+			m_Camera.eye.y -= amount;
+			m_Camera.pos.x += amount;
+			m_Camera.eye.x += amount;
+		}
+		if (m_Input.key(NA_KEY_S))
+		{
+			m_Camera.pos.x += amount;
+			m_Camera.eye.x += amount;
+			m_Camera.pos.y += amount;
+			m_Camera.eye.y += amount;
+		}
+		if (m_Input.key(NA_KEY_D))
+		{
+			m_Camera.pos.y += amount;
+			m_Camera.eye.y += amount;
+			m_Camera.pos.x -= amount;
+			m_Camera.eye.x -= amount;
+
+		}
 		//g_Logger.fmt(Na::Trace, "fps: {}", (u32)(1.0 / dt));
 	}
 
@@ -141,38 +201,60 @@ namespace ExampleApp {
 		static auto x_StartTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::steady_clock::now() - x_StartTime).count();
 
-		UniformBufferData uniform_buffer_data{
-			.model = glm::rotate(
-				glm::mat4(1.0f),
-				time * glm::radians(90.0f),
-				glm::vec3(0.0f, 0.0f, 1.0f)
-			),
+		Na::Frame& frame = m_Renderer.clear(glm::vec4(0.11f, 0.11f, 0.13f, 1.0f));
+		if (!frame)
+			return;
+
+		PushConstantData pc{
 			.view = glm::lookAt(
-				glm::vec3(2.5f, 2.5f, 2.5f),
-				glm::vec3(0.0f, 0.0f, 0.0f),
+				m_Camera.pos,
+				m_Camera.eye,
 				glm::vec3(0.0f, 0.0f, 1.0f)
 			),
 			.proj = glm::perspective(
-				glm::radians(45.0f),
+				glm::radians(m_Camera.fov),
 				(float)m_Window.width() / (float)m_Window.height(),
 				0.1f, 10.0f
-			)
+			),
+			.model = glm::mat4(1.0f)
 		};
-		uniform_buffer_data.proj[1] *= -1.0f;
-
-		if (!m_Renderer.clear(glm::vec4(0.11f, 0.11f, 0.13f, 1.0f)))
-			return;
-
 		m_Renderer.set_push_constant(
 			Na::PushConstant{
-				Na::ShaderStageBits::Vertex,
-				sizeof(UniformBufferData)
+				.shader_stage = Na::ShaderStageBits::Vertex,
+				.size = sizeof(glm::mat4) * 2,
+				.offset = 0
 			},
-			&uniform_buffer_data
+			&pc
 		);
 
-		if (m_Texture)
-			m_Ibo.draw(m_Vbo, m_Renderer);
+		frame.cmd_buffer.bindVertexBuffers(0, { m_Vbo }, { 0 });
+		frame.cmd_buffer.bindIndexBuffer(m_Ibo, 0, vk::IndexType::eUint32);
+
+		pc.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 1.0f, 1.0f));
+		pc.model = glm::rotate(pc.model, time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		pc.model = glm::scale(pc.model, glm::vec3(0.5f, 0.5f, 0.5f));
+		m_Renderer.set_push_constant(
+			Na::PushConstant{
+				.shader_stage = Na::ShaderStageBits::Vertex,
+				.size = sizeof(glm::mat4),
+				.offset = sizeof(glm::mat4) * 2
+			},
+			&pc.model
+		);
+		frame.cmd_buffer.drawIndexed(m_Ibo.count(), 1, 0, 0, 0);
+
+		pc.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -1.0f, 1.0f));
+		pc.model = glm::rotate(pc.model, time * glm::radians(-90.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+		pc.model = glm::scale(pc.model, glm::vec3(0.2f, 0.2f, 0.2f));
+		m_Renderer.set_push_constant(
+			Na::PushConstant{
+				.shader_stage = Na::ShaderStageBits::Vertex,
+				.size = sizeof(glm::mat4),
+				.offset = sizeof(glm::mat4) * 2
+			},
+			&pc.model
+		);
+		frame.cmd_buffer.drawIndexed(m_Ibo.count(), 1, 0, 0, 0);
 
 		m_Renderer.present();
 	}

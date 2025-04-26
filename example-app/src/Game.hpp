@@ -4,6 +4,12 @@
 #include "Natrium-Core/Natrium.hpp"
 
 namespace ExampleApp {
+	struct Camera {
+		glm::vec3 pos;
+		glm::vec3 eye;
+		float fov;
+	};
+
 	class Game : public Na::App {
 	public:
 		Game(void);
@@ -23,6 +29,8 @@ namespace ExampleApp {
 		Na::IndexBuffer m_Ibo;
 
 		Na::Texture m_Texture;
+
+		Camera m_Camera;
 	};
 	inline Na::Logger<> g_Logger{"ExampleApp", &std::cout};
 } // namespace ExampleApp

@@ -4,9 +4,9 @@
 #extension GL_NV_uniform_buffer_std430_layout : enable
 
 layout(push_constant, std430) uniform pc {
-    mat4 model;
     mat4 view;
     mat4 proj;
+    mat4 model;
 };
 
 layout(location = 0) in vec3 a_Position;
