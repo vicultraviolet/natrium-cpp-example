@@ -67,12 +67,19 @@ namespace ExampleApp {
 	Game::Game(void)
 	: m_Window(1280, 720, "ExampleApp"),
 	m_Renderer(m_Window),
-	m_Camera{glm::vec3(2.5f, 2.5f, 2.5f), glm::vec3(0.0f, 0.0f, 0.1f), 45.0f}
+	m_Camera{glm::vec3(2.5f, 2.5f, 2.5f), glm::vec3(0.0f, 0.0f, 0.1f), 45.0f},
+	m_AssetRegistry(Na::Context::GetExecDir() / "../../../assets/", Na::Context::GetExecDir())
 	{
-		std::filesystem::path assets_dir = Na::Context::GetExecDir() / "../../../assets/";
-
-		Na::Shader vertex_shader(assets_dir / "shaders/vertex.glsl", Na::ShaderStageBits::Vertex);
-		Na::Shader fragment_shader(assets_dir / "shaders/fragment.glsl", Na::ShaderStageBits::Fragment);
+		Na::ShaderModule vs = m_AssetRegistry.create_shader_module_from_src(
+			"shaders/vertex.glsl",
+			Na::ShaderStageBits::Vertex,
+			"main"
+		);
+		Na::ShaderModule fs = m_AssetRegistry.create_shader_module_from_src(
+			"shaders/fragment.glsl",
+			Na::ShaderStageBits::Fragment,
+			"main"
+		);
 
 		Na::ShaderAttributeBinding binding0{
 			.binding = 0,
@@ -106,8 +113,8 @@ namespace ExampleApp {
 		m_Pipeline = Na::Pipeline(
 			m_Renderer,
 			Na::PipelineShaderInfos{
-				vertex_shader.pipeline_shader_info(),
-				fragment_shader.pipeline_shader_info()
+				vs.pipeline_shader_info(),
+				fs.pipeline_shader_info()
 			},
 			Na::ShaderAttributeLayout{
 				binding0
@@ -127,19 +134,14 @@ namespace ExampleApp {
 			}
 		);
 
-		vertex_shader.destroy();
-		fragment_shader.destroy();
-
 		m_Renderer.bind_pipeline(m_Pipeline.handle());
 
 		m_Vbo = Na::VertexBuffer(vertexBufferData.size(), &vertexBufferData, m_Renderer);
 		m_Ibo = Na::IndexBuffer((u32)indexData.size(), indexData.data(), m_Renderer);
 
-		Na::Image img = Na::Image::Load(assets_dir / "texture.png");
+		Na::AssetHandle<Na::Image> img = m_AssetRegistry.load_asset<Na::Image>("texture.png");
 
-		m_Texture = Na::Texture(img, 0, m_Renderer);
-
-		img.destroy();
+		m_Texture = Na::Texture(*img, 0, m_Renderer);
 	}
 
 	Game::~Game(void)

@@ -19,6 +19,8 @@ namespace ExampleApp {
 		void update(double dt) override;
 		void draw(void) override;
 	private:
+		Na::AssetRegistry m_AssetRegistry;
+
 		Na::Window m_Window;
 		Na::Input m_Input;
 
