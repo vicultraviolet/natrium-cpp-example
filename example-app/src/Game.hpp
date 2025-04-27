@@ -29,6 +29,7 @@ namespace ExampleApp {
 
 		Na::VertexBuffer m_Vbo;
 		Na::IndexBuffer m_Ibo;
+		Na::StorageBuffer m_InstanceBuffer;
 
 		Na::Texture m_Texture;
 

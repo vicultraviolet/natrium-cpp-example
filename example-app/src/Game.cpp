@@ -7,15 +7,13 @@ namespace ExampleApp {
 		glm::vec2 tex_coord;
 	};
 
-	struct InterleavedInstance {
-		glm::vec3 pos;
-		float scale;
+	struct Instance {
+		glm::mat4 model;
 	};
 
 	struct PushConstantData {
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 proj;
-		alignas(16) glm::mat4 model;
 	};
 
 	struct VertexBufferData {
@@ -48,6 +46,16 @@ namespace ExampleApp {
 		[[nodiscard]] inline u32 size(void) const { return (u32)vertex_data.size() * sizeof(InterleavedVertex); }
 	};
 	static VertexBufferData vertexBufferData{};
+
+	struct InstanceBufferData {
+		std::array<Instance, 2> instance_data = {
+			Instance(glm::mat4(1.0f)),
+			Instance(glm::mat4(1.0f))
+		};
+		[[nodiscard]] inline u32 count(void) const { return (u32)instance_data.size(); }
+		[[nodiscard]] inline u32 size(void) const { return (u32)instance_data.size() * sizeof(Instance); }
+	};
+	InstanceBufferData instanceBufferData{};
 	
 	static std::array<u32, 36> indexData = {
 		0, 1, 2,
@@ -122,12 +130,17 @@ namespace ExampleApp {
 			Na::ShaderUniformLayout{
 				Na::ShaderUniform{
 					.binding = 0,
+					.type = Na::ShaderUniformType::StorageBuffer,
+					.shader_stage = Na::ShaderStageBits::Vertex
+				},
+				Na::ShaderUniform{
+					.binding = 1,
 					.type = Na::ShaderUniformType::Texture,
 					.shader_stage = Na::ShaderStageBits::Fragment
 				}
 			},
 			Na::PushConstantLayout{
-				Na::PushConstant {
+				Na::PushConstant{
 					.shader_stage = Na::ShaderStageBits::Vertex,
 					.size = sizeof(PushConstantData)
 				}
@@ -138,10 +151,11 @@ namespace ExampleApp {
 
 		m_Vbo = Na::VertexBuffer(vertexBufferData.size(), &vertexBufferData, m_Renderer);
 		m_Ibo = Na::IndexBuffer((u32)indexData.size(), indexData.data(), m_Renderer);
+		m_InstanceBuffer = Na::StorageBuffer(instanceBufferData.size(), 0, m_Renderer);
 
 		Na::AssetHandle<Na::Image> img = m_AssetRegistry.load_asset<Na::Image>("texture.png");
-
-		m_Texture = Na::Texture(*img, 0, m_Renderer);
+		m_Texture = Na::Texture(*img, 1, m_Renderer);
+		m_AssetRegistry.free_asset("texture.png");
 	}
 
 	Game::~Game(void)
@@ -218,45 +232,28 @@ namespace ExampleApp {
 				(float)m_Window.width() / (float)m_Window.height(),
 				0.1f, 10.0f
 			),
-			.model = glm::mat4(1.0f)
 		};
 		m_Renderer.set_push_constant(
 			Na::PushConstant{
 				.shader_stage = Na::ShaderStageBits::Vertex,
-				.size = sizeof(glm::mat4) * 2,
-				.offset = 0
+				.size = sizeof(glm::mat4) * 2
 			},
 			&pc
 		);
 
+		glm::mat4& model0 = instanceBufferData.instance_data[0].model;
+		glm::mat4& model1 = instanceBufferData.instance_data[1].model;
+
+		model0 = glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.5f, 0.2f));
+		model0 = glm::rotate(model0, time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model1 = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.5f, 0.7f));
+		model1 = glm::rotate(model1, time * glm::radians(-90.0f), glm::vec3(1.0f, 1.0f, 0.0f));
+
+		m_InstanceBuffer.set_data(&instanceBufferData, m_Renderer);
+
 		frame.cmd_buffer.bindVertexBuffers(0, { m_Vbo }, { 0 });
 		frame.cmd_buffer.bindIndexBuffer(m_Ibo, 0, vk::IndexType::eUint32);
-
-		pc.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 1.0f, 1.0f));
-		pc.model = glm::rotate(pc.model, time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		pc.model = glm::scale(pc.model, glm::vec3(0.5f, 0.5f, 0.5f));
-		m_Renderer.set_push_constant(
-			Na::PushConstant{
-				.shader_stage = Na::ShaderStageBits::Vertex,
-				.size = sizeof(glm::mat4),
-				.offset = sizeof(glm::mat4) * 2
-			},
-			&pc.model
-		);
-		frame.cmd_buffer.drawIndexed(m_Ibo.count(), 1, 0, 0, 0);
-
-		pc.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -1.0f, 1.0f));
-		pc.model = glm::rotate(pc.model, time * glm::radians(-90.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-		pc.model = glm::scale(pc.model, glm::vec3(0.2f, 0.2f, 0.2f));
-		m_Renderer.set_push_constant(
-			Na::PushConstant{
-				.shader_stage = Na::ShaderStageBits::Vertex,
-				.size = sizeof(glm::mat4),
-				.offset = sizeof(glm::mat4) * 2
-			},
-			&pc.model
-		);
-		frame.cmd_buffer.drawIndexed(m_Ibo.count(), 1, 0, 0, 0);
+		frame.cmd_buffer.drawIndexed(m_Ibo.count(), instanceBufferData.count(), 0, 0, 0);
 
 		m_Renderer.present();
 	}

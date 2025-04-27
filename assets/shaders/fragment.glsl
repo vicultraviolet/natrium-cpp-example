@@ -1,7 +1,7 @@
 #version 450
 #pragma shader_stage(fragment)
 
-layout(binding = 0) uniform sampler2D u_TextureSampler;
+layout(binding = 1) uniform sampler2D u_TextureSampler;
 
 layout(location = 0) in vec2 o_FragTexCoord;
 
