@@ -27,8 +27,8 @@ namespace ExampleApp {
 		Na::Renderer m_Renderer;
 		Na::Pipeline m_Pipeline;
 
-		Na::VertexBuffer m_Vbo;
-		Na::IndexBuffer m_Ibo;
+		Na::VertexBuffer m_VertexBuffer;
+		Na::IndexBuffer m_IndexBuffer;
 		Na::StorageBuffer m_InstanceBuffer;
 
 		Na::Texture m_Texture;

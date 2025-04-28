@@ -151,8 +151,8 @@ namespace ExampleApp {
 
 		Na::AssetHandle<Na::Model> model = m_AssetRegistry.load_asset<Na::Model>("model.obj");
 
-		m_Vbo = Na::VertexBuffer(model->vertex_data_size(), model->vertices().ptr(), m_Renderer);
-		m_Ibo = Na::IndexBuffer((u32)model->index_count(), model->indices().ptr(), m_Renderer);
+		m_VertexBuffer = Na::VertexBuffer(model->vertex_data_size(), model->vertices().ptr(), m_Renderer);
+		m_IndexBuffer = Na::IndexBuffer((u32)model->index_count(), model->indices().ptr(), m_Renderer);
 
 		m_InstanceBuffer = Na::StorageBuffer(instanceBufferData.size(), 0, m_Renderer);
 
@@ -291,7 +291,7 @@ namespace ExampleApp {
 
 		m_InstanceBuffer.set_data(&instanceBufferData, m_Renderer);
 		
-		m_Ibo.draw(m_Vbo, instanceBufferData.count(), m_Renderer);
+		m_IndexBuffer.draw(m_VertexBuffer, instanceBufferData.count(), m_Renderer);
 
 		m_Renderer.end_frame();
 	}
