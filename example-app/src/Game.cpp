@@ -255,11 +255,11 @@ namespace ExampleApp {
 		static auto x_StartTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::steady_clock::now() - x_StartTime).count();
 
-		Na::Frame& frame = m_Renderer.clear(glm::vec4(0.11f, 0.11f, 0.13f, 1.0f));
-		if (!frame)
+		Na::FrameData& fd = m_Renderer.begin_frame(glm::vec4(0.11f, 0.11f, 0.13f, 1.0f));
+		if (fd.skipped)
 			return;
 
-		PushConstantData pc{
+		PushConstantData pcd{
 			.view = glm::lookAt(
 				m_Camera.pos,
 				m_Camera.eye,
@@ -276,7 +276,7 @@ namespace ExampleApp {
 				.shader_stage = Na::ShaderStageBits::Vertex,
 				.size = sizeof(glm::mat4) * 2
 			},
-			&pc
+			&pcd
 		);
 
 		glm::mat4& model0 = instanceBufferData.instance_data[0].model;
@@ -284,18 +284,15 @@ namespace ExampleApp {
 
 		model0 = glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.5f, 0.2f));
 		model0 = glm::rotate(model0, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		//model0 = glm::rotate(model0, time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model1 = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.5f, 0.7f));
 		model1 = glm::scale(model1, glm::vec3(0.3f, 0.3f, 0.3f));
 		model1 = glm::rotate(model1, time * glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model1 = glm::rotate(model1, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 		m_InstanceBuffer.set_data(&instanceBufferData, m_Renderer);
+		
+		m_Ibo.draw(m_Vbo, instanceBufferData.count(), m_Renderer);
 
-		frame.cmd_buffer.bindVertexBuffers(0, { m_Vbo }, { 0 });
-		frame.cmd_buffer.bindIndexBuffer(m_Ibo, 0, vk::IndexType::eUint32);
-		frame.cmd_buffer.drawIndexed(m_Ibo.count(), instanceBufferData.count(), 0, 0, 0);
-
-		m_Renderer.present();
+		m_Renderer.end_frame();
 	}
 } // namespace ExampleApp
