@@ -25,6 +25,7 @@ project "ExampleApp"
     links {
         "Natrium-Renderer",
         "Natrium-Core",
+        "%{Libraries.tiny_obj_loader}",
         "%{Libraries.stb}",
         "%{Libraries.glfw}",
         "%{Libraries.fmt}",

@@ -75,7 +75,7 @@ namespace ExampleApp {
 	Game::Game(void)
 	: m_Window(1280, 720, "ExampleApp"),
 	m_Renderer(m_Window),
-	m_Camera{glm::vec3(2.5f, 2.5f, 2.5f), glm::vec3(0.0f, 0.0f, 0.1f), 45.0f},
+	m_Camera{glm::vec3(2.5f, 1.0f, 2.5f), glm::vec3(0.0f, 0.0f, 0.1f), 45.0f},
 	m_AssetRegistry(Na::Context::GetExecDir() / "../../../assets/", Na::Context::GetExecDir())
 	{
 		Na::ShaderModule vs = m_AssetRegistry.create_shader_module_from_src(
@@ -149,13 +149,18 @@ namespace ExampleApp {
 
 		m_Renderer.bind_pipeline(m_Pipeline.handle());
 
-		m_Vbo = Na::VertexBuffer(vertexBufferData.size(), &vertexBufferData, m_Renderer);
-		m_Ibo = Na::IndexBuffer((u32)indexData.size(), indexData.data(), m_Renderer);
+		Na::AssetHandle<Na::Model> model = m_AssetRegistry.load_asset<Na::Model>("model.obj");
+
+		m_Vbo = Na::VertexBuffer(model->vertex_data_size(), model->vertices().ptr(), m_Renderer);
+		m_Ibo = Na::IndexBuffer((u32)model->index_count(), model->indices().ptr(), m_Renderer);
+
 		m_InstanceBuffer = Na::StorageBuffer(instanceBufferData.size(), 0, m_Renderer);
 
 		Na::AssetHandle<Na::Image> img = m_AssetRegistry.load_asset<Na::Image>("texture.png");
 		m_Texture = Na::Texture(*img, 1, m_Renderer);
+
 		m_AssetRegistry.free_asset("texture.png");
+		m_AssetRegistry.free_asset("tree/model.obj");
 	}
 
 	Game::~Game(void)
@@ -177,34 +182,67 @@ namespace ExampleApp {
 	void Game::update(double dt)
 	{
 		float amount = 3.0f * (float)dt;
+		if (m_Input.key(NA_KEY_Q))
+		{
+			m_Camera.pos.y += amount;
+			m_Camera.eye.y += amount;
+		}
+		if (m_Input.key(NA_KEY_E))
+		{
+			m_Camera.pos.y -= amount;
+			m_Camera.eye.y -= amount;
+		}
 		if (m_Input.key(NA_KEY_W))
 		{
 			m_Camera.pos.x -= amount;
 			m_Camera.eye.x -= amount;
-			m_Camera.pos.y -= amount;
-			m_Camera.eye.y -= amount;
+			m_Camera.pos.z -= amount;
+			m_Camera.eye.z -= amount;
 		}
 		if (m_Input.key(NA_KEY_A))
 		{
-			m_Camera.pos.y -= amount;
-			m_Camera.eye.y -= amount;
-			m_Camera.pos.x += amount;
-			m_Camera.eye.x += amount;
+			m_Camera.pos.x -= amount;
+			m_Camera.eye.x -= amount;
+			m_Camera.pos.z += amount;
+			m_Camera.eye.z += amount;
 		}
 		if (m_Input.key(NA_KEY_S))
 		{
+			m_Camera.pos.z += amount;
+			m_Camera.eye.z += amount;
 			m_Camera.pos.x += amount;
 			m_Camera.eye.x += amount;
-			m_Camera.pos.y += amount;
-			m_Camera.eye.y += amount;
 		}
 		if (m_Input.key(NA_KEY_D))
 		{
-			m_Camera.pos.y += amount;
+			m_Camera.pos.x += amount;
+			m_Camera.eye.x += amount;
+			m_Camera.pos.z -= amount;
+			m_Camera.eye.z -= amount;
+		}
+		if (m_Input.key(NA_KEY_MINUS))
+		{
+			m_Camera.fov -= amount * 20.0f;
+		}
+		if (m_Input.key(NA_KEY_EQUAL))
+		{
+			m_Camera.fov += amount * 20.0f;
+		}
+		if (m_Input.key(NA_KEY_UP))
+		{
 			m_Camera.eye.y += amount;
-			m_Camera.pos.x -= amount;
-			m_Camera.eye.x -= amount;
-
+		}
+		if (m_Input.key(NA_KEY_DOWN))
+		{
+			m_Camera.eye.y -= amount;
+		}
+		if (m_Input.key(NA_KEY_LEFT))
+		{
+			m_Camera.eye.z += amount;
+		}
+		if (m_Input.key(NA_KEY_RIGHT))
+		{
+			m_Camera.eye.z -= amount;
 		}
 		//g_Logger.fmt(Na::Trace, "fps: {}", (u32)(1.0 / dt));
 	}
@@ -225,7 +263,7 @@ namespace ExampleApp {
 			.view = glm::lookAt(
 				m_Camera.pos,
 				m_Camera.eye,
-				glm::vec3(0.0f, 0.0f, 1.0f)
+				glm::vec3(0.0f, 1.0f, 0.0f)
 			),
 			.proj = glm::perspective(
 				glm::radians(m_Camera.fov),
@@ -245,9 +283,12 @@ namespace ExampleApp {
 		glm::mat4& model1 = instanceBufferData.instance_data[1].model;
 
 		model0 = glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.5f, 0.2f));
-		model0 = glm::rotate(model0, time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model0 = glm::rotate(model0, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		//model0 = glm::rotate(model0, time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model1 = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.5f, 0.7f));
-		model1 = glm::rotate(model1, time * glm::radians(-90.0f), glm::vec3(1.0f, 1.0f, 0.0f));
+		model1 = glm::scale(model1, glm::vec3(0.3f, 0.3f, 0.3f));
+		model1 = glm::rotate(model1, time * glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model1 = glm::rotate(model1, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 		m_InstanceBuffer.set_data(&instanceBufferData, m_Renderer);
 
