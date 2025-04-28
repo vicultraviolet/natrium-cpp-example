@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "cppdbg",
+            "request": "launch",
+            "name": "Debug",
+            "program": "${workspaceFolder}/bin/dbg-linux/ExampleApp/ExampleApp-bin",
+            "args": [],
+            "preLaunchTask": "Build Debug",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
