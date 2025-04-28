@@ -253,7 +253,7 @@ namespace ExampleApp {
 			return;
 
 		static auto x_StartTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::steady_clock::now() - x_StartTime).count();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::high_resolution_clock::now() - x_StartTime).count();
 
 		Na::FrameData& fd = m_Renderer.begin_frame(glm::vec4(0.11f, 0.11f, 0.13f, 1.0f));
 		if (fd.skipped)

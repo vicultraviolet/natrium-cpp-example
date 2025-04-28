@@ -23,8 +23,8 @@ project "ExampleApp"
         "../natrium-cpp/%{IncludeDirectories.glm}",
     }
     links {
-        "Natrium-Renderer",
         "Natrium-Core",
+        "Natrium-Renderer",
         "%{Libraries.tiny_obj_loader}",
         "%{Libraries.stb}",
         "%{Libraries.glfw}",
