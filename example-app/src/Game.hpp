@@ -25,7 +25,7 @@ namespace ExampleApp {
 		Na::Input m_Input;
 
 		Na::Renderer m_Renderer;
-		Na::Pipeline m_Pipeline;
+		Na::GraphicsPipeline m_Pipeline;
 
 		Na::VertexBuffer m_VertexBuffer;
 		Na::IndexBuffer m_IndexBuffer;

@@ -78,6 +78,9 @@ namespace ExampleApp {
 	m_Camera{glm::vec3(2.5f, 1.0f, 2.5f), glm::vec3(0.0f, 0.0f, 0.1f), 45.0f},
 	m_AssetRegistry(Na::Context::GetExecDir() / "../../../assets/", Na::Context::GetExecDir())
 	{
+		Na::AssetHandle<Na::Model> model = m_AssetRegistry.load_asset<Na::Model>("model.obj");
+		Na::AssetHandle<Na::Image> img = m_AssetRegistry.load_asset<Na::Image>("texture.png");
+
 		Na::ShaderModule vs = m_AssetRegistry.create_shader_module_from_src(
 			"shaders/vertex.glsl",
 			Na::ShaderStageBits::Vertex,
@@ -89,43 +92,29 @@ namespace ExampleApp {
 			"main"
 		);
 
-		Na::ShaderAttributeBinding binding0{
-			.binding = 0,
-			.input_rate = Na::AttributeInputRate::Vertex,
-			.attributes = {
-				Na::ShaderAttribute{
-					.location = 0,
-					.type = Na::ShaderAttributeType::Vec3
-				},
-				Na::ShaderAttribute{
-					.location = 1,
-					.type = Na::ShaderAttributeType::Vec2
-				}
-			}
-		};
-		Na::ShaderAttributeBinding binding1{
-			.binding = 1,
-			.input_rate = Na::AttributeInputRate::Instance,
-			.attributes = {
-				Na::ShaderAttribute{
-					.location = 2,
-					.type = Na::ShaderAttributeType::Vec3
-				},
-				Na::ShaderAttribute{
-					.location = 3,
-					.type = Na::ShaderAttributeType::Float
-				}
-			}
-		};
 
-		m_Pipeline = Na::Pipeline(
+
+		m_Pipeline = Na::GraphicsPipeline(
 			m_Renderer,
 			Na::PipelineShaderInfos{
 				vs.pipeline_shader_info(),
 				fs.pipeline_shader_info()
 			},
 			Na::ShaderAttributeLayout{
-				binding0
+				Na::ShaderAttributeBinding{
+					.binding = 0,
+					.input_rate = Na::AttributeInputRate::Vertex,
+					.attributes = {
+						Na::ShaderAttribute{
+							.location = 0,
+							.type = Na::ShaderAttributeType::Vec3
+						},
+						Na::ShaderAttribute{
+							.location = 1,
+							.type = Na::ShaderAttributeType::Vec2
+						}
+					}
+				}
 			},
 			Na::ShaderUniformLayout{
 				Na::ShaderUniform{
@@ -147,17 +136,14 @@ namespace ExampleApp {
 			}
 		);
 
-		m_Renderer.bind_pipeline(m_Pipeline.handle());
-
-		Na::AssetHandle<Na::Model> model = m_AssetRegistry.load_asset<Na::Model>("model.obj");
-
 		m_VertexBuffer = Na::VertexBuffer(model->vertex_data_size(), model->vertices().ptr(), m_Renderer);
 		m_IndexBuffer = Na::IndexBuffer((u32)model->index_count(), model->indices().ptr(), m_Renderer);
 
-		m_InstanceBuffer = Na::StorageBuffer(instanceBufferData.size(), 0, m_Renderer);
+		m_InstanceBuffer = Na::StorageBuffer(instanceBufferData.size(), m_Renderer);
+		m_InstanceBuffer.bind_to_pipeline(0, m_Pipeline);
 
-		Na::AssetHandle<Na::Image> img = m_AssetRegistry.load_asset<Na::Image>("texture.png");
-		m_Texture = Na::Texture(*img, 1, m_Renderer);
+		m_Texture = Na::Texture(*img, m_Renderer);
+		m_Texture.bind_to_pipeline(1, m_Pipeline);
 
 		m_AssetRegistry.free_asset("texture.png");
 		m_AssetRegistry.free_asset("tree/model.obj");
@@ -259,6 +245,8 @@ namespace ExampleApp {
 		if (fd.skipped)
 			return;
 
+		m_Renderer.bind_pipeline(m_Pipeline);
+
 		PushConstantData pcd{
 			.view = glm::lookAt(
 				m_Camera.pos,
@@ -276,7 +264,8 @@ namespace ExampleApp {
 				.shader_stage = Na::ShaderStageBits::Vertex,
 				.size = sizeof(glm::mat4) * 2
 			},
-			&pcd
+			&pcd,
+			m_Pipeline
 		);
 
 		glm::mat4& model0 = instanceBufferData.instance_data[0].model;
