@@ -6,6 +6,7 @@ class BuildSystem(enum.IntEnum):
 	Makefiles = 1
 	MsBuild   = 2
 	CodeLite  = 3
+	Clean     = 4
 
 def build_system_to_str(build_system: BuildSystem) -> str:
 	match(build_system):
@@ -14,6 +15,8 @@ def build_system_to_str(build_system: BuildSystem) -> str:
 		case BuildSystem.MsBuild:
 			return "msbuild"
 		case BuildSystem.CodeLite:
+			return "codelite"
+		case BuildSystem.Clean:
 			return "codelite"
 		case _:
 			return ""
@@ -48,6 +51,10 @@ def main():
 		"Generate CodeLite project files",
 		f"{premake} codelite"
 	))
+	build_systems.insert(BuildSystem.Clean, BuildSystemInfo(
+		"Clean generated files",
+		f"{premake} clean"
+	))
 
 	match (sys.argv[1]):
 		case "make":
@@ -56,13 +63,15 @@ def main():
 			os.system(build_systems[BuildSystem.MsBuild].build_command)
 		case "codelite":
 			os.system(build_systems[BuildSystem.CodeLite].build_command)
+		case "clean":
+			os.system(build_systems[BuildSystem.Clean].build_command)
 		case _:
 			print("Options: ")
 			for i, build_system in enumerate(build_systems):
 				if i == 0:
 					continue
 				print(f"\t{build_system_to_str(i)}: {build_system.info}")
-			print("\tclean: Clean generated files")
+			
 
 if __name__ == "__main__":
 	main()

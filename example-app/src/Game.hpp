@@ -1,7 +1,7 @@
 #if !defined(EXAMPLE_APP_GAME_HPP)
 #define EXAMPLE_APP_GAME_HPP
 
-#include "Natrium-Core/Natrium.hpp"
+#include <Natrium/Natrium.hpp>
 
 namespace ExampleApp {
 	struct Camera {
