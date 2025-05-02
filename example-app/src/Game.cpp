@@ -246,6 +246,14 @@ namespace ExampleApp {
 		{
 			m_Camera.eye.z -= amount;
 		}
+		if (m_Input.gamepad_connected(Na::Joysticks::k_1))
+		{
+			if (m_Input.gamepad_button(Na::Joysticks::k_1, Na::GamepadButtons::k_A))
+				g_Logger.fmt(Na::Trace, "Joystick A button");
+			if (m_Input.gamepad_axis(Na::Joysticks::k_1, Na::GamepadAxes::k_LeftTrigger) != -1.0f)
+				g_Logger.fmt(Na::Trace, "Joystick Left trigger: {}", m_Input.gamepad_axis(Na::Joysticks::k_1, Na::GamepadAxes::k_LeftTrigger));
+		}
+		
 		//g_Logger.fmt(Na::Trace, "fps: {}", (u32)(1.0 / dt));
 	}
 
