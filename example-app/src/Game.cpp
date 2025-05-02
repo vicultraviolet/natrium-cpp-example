@@ -167,14 +167,14 @@ namespace ExampleApp {
 			for (Na::Event& e : Na::PollEvents())
 				this->_on_event(e);
 		}
-		Na::VkContext::GetLogicalDevice().waitIdle();
+		Na::VkContext::WaitForRemainingDeviceTasks();
 	}
 
 	void Game::_on_event(Na::Event& e)
 	{
 		switch (e.type)
 		{
-		case Na::Event_Type::WindowClosed:
+		case Na::EventType::WindowClosed:
 			this->running = false;
 			return;
 		}
@@ -184,65 +184,65 @@ namespace ExampleApp {
 	void Game::_update(double dt)
 	{
 		float amount = 3.0f * (float)dt;
-		if (m_Input.key(NA_KEY_Q))
+		if (m_Input.key(Na::Keys::k_Q))
 		{
 			m_Camera.pos.y += amount;
 			m_Camera.eye.y += amount;
 		}
-		if (m_Input.key(NA_KEY_E))
+		if (m_Input.key(Na::Keys::k_E))
 		{
 			m_Camera.pos.y -= amount;
 			m_Camera.eye.y -= amount;
 		}
-		if (m_Input.key(NA_KEY_W))
+		if (m_Input.key(Na::Keys::k_W))
 		{
 			m_Camera.pos.x -= amount;
 			m_Camera.eye.x -= amount;
 			m_Camera.pos.z -= amount;
 			m_Camera.eye.z -= amount;
 		}
-		if (m_Input.key(NA_KEY_A))
+		if (m_Input.key(Na::Keys::k_A))
 		{
 			m_Camera.pos.x -= amount;
 			m_Camera.eye.x -= amount;
 			m_Camera.pos.z += amount;
 			m_Camera.eye.z += amount;
 		}
-		if (m_Input.key(NA_KEY_S))
+		if (m_Input.key(Na::Keys::k_S))
 		{
 			m_Camera.pos.z += amount;
 			m_Camera.eye.z += amount;
 			m_Camera.pos.x += amount;
 			m_Camera.eye.x += amount;
 		}
-		if (m_Input.key(NA_KEY_D))
+		if (m_Input.key(Na::Keys::k_D))
 		{
 			m_Camera.pos.x += amount;
 			m_Camera.eye.x += amount;
 			m_Camera.pos.z -= amount;
 			m_Camera.eye.z -= amount;
 		}
-		if (m_Input.key(NA_KEY_MINUS))
+		if (m_Input.key(Na::Keys::k_Minus))
 		{
 			m_Camera.fov -= amount * 20.0f;
 		}
-		if (m_Input.key(NA_KEY_EQUAL))
+		if (m_Input.key(Na::Keys::k_Equal))
 		{
 			m_Camera.fov += amount * 20.0f;
 		}
-		if (m_Input.key(NA_KEY_UP))
+		if (m_Input.key(Na::Keys::k_Up))
 		{
 			m_Camera.eye.y += amount;
 		}
-		if (m_Input.key(NA_KEY_DOWN))
+		if (m_Input.key(Na::Keys::k_Down))
 		{
 			m_Camera.eye.y -= amount;
 		}
-		if (m_Input.key(NA_KEY_LEFT))
+		if (m_Input.key(Na::Keys::k_Left))
 		{
 			m_Camera.eye.z += amount;
 		}
-		if (m_Input.key(NA_KEY_RIGHT))
+		if (m_Input.key(Na::Keys::k_Right))
 		{
 			m_Camera.eye.z -= amount;
 		}
