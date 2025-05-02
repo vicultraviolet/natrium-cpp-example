@@ -10,14 +10,18 @@ namespace ExampleApp {
 		float fov;
 	};
 
-	class Game : public Na::App {
+	class Game {
 	public:
-		Game(void);
-		~Game(void) override;
+		bool running = true;
 
-		void on_event(Na::Event& e) override;
-		void update(double dt) override;
-		void draw(void) override;
+		Game(void);
+		~Game(void);
+
+		void run(void);
+	private:
+		void _on_event(Na::Event& e);
+		void _update(double dt);
+		void _draw(void);
 	private:
 		Na::AssetRegistry m_AssetRegistry;
 

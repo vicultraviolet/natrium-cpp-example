@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
 
 	{
 		// performance is better with heap allocation, i profiled
-		std::unique_ptr<ExampleApp::Game> game = std::make_unique<ExampleApp::Game>();
+		auto game = std::make_unique<ExampleApp::Game>();
 		game->run();
 	}
 

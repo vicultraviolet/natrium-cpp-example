@@ -154,18 +154,34 @@ namespace ExampleApp {
 
 	}
 
-	void Game::on_event(Na::Event& e)
+	void Game::run(void)
 	{
-		m_Input.on_event(e);
+		Na::DeltaTime dt;
+		while (this->running)
+		{
+			dt.calculate();
+			this->_update(dt);
+
+			this->_draw();
+
+			for (Na::Event& e : Na::PollEvents())
+				this->_on_event(e);
+		}
+		Na::VkContext::GetLogicalDevice().waitIdle();
+	}
+
+	void Game::_on_event(Na::Event& e)
+	{
 		switch (e.type)
 		{
 		case Na::Event_Type::WindowClosed:
-			Na::App::should_close = true;
-			break;
+			this->running = false;
+			return;
 		}
+		m_Input.on_event(e);
 	}
 
-	void Game::update(double dt)
+	void Game::_update(double dt)
 	{
 		float amount = 3.0f * (float)dt;
 		if (m_Input.key(NA_KEY_Q))
@@ -233,7 +249,7 @@ namespace ExampleApp {
 		//g_Logger.fmt(Na::Trace, "fps: {}", (u32)(1.0 / dt));
 	}
 
-	void Game::draw(void)
+	void Game::_draw(void)
 	{
 		if (m_Window.minimized())
 			return;
