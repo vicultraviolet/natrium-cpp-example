@@ -44,7 +44,7 @@ namespace ExampleApp {
 		);
 
 		m_Pipeline = Na::GraphicsPipeline(
-			main_renderer,
+			main_renderer.core(),
 			Na::PipelineShaderInfos{
 				vs.pipeline_shader_info(),
 				fs.pipeline_shader_info()
@@ -85,13 +85,13 @@ namespace ExampleApp {
 			}
 		);
 
-		m_VertexBuffer = Na::VertexBuffer(model->vertex_data_size(), model->vertices().ptr(), main_renderer);
-		m_IndexBuffer = Na::IndexBuffer((u32)model->index_count(), model->indices().ptr(), main_renderer);
+		m_VertexBuffer = Na::VertexBuffer(model->vertex_data_size(), model->vertices().ptr());
+		m_IndexBuffer = Na::IndexBuffer((u32)model->index_count(), model->indices().ptr());
 
-		m_InstanceBuffer = Na::StorageBuffer(instanceBufferData.size(), main_renderer);
+		m_InstanceBuffer = Na::StorageBuffer(instanceBufferData.size(), main_renderer.core().settings());
 		m_InstanceBuffer.bind_to_pipeline(0, m_Pipeline);
 
-		m_Texture = Na::Texture(*img, main_renderer);
+		m_Texture = Na::Texture(*img, main_renderer.core().settings());
 		m_Texture.bind_to_pipeline(1, m_Pipeline);
 
 		GameContext::AssetRegistry().free_asset("texture.png");
@@ -170,14 +170,15 @@ namespace ExampleApp {
 		}
 	}
 
-	void MainLayer::draw(Na::FrameData& fd)
+	void MainLayer::draw(void)
 	{
 		Na::Window& main_window = GameContext::MainWindow();
+		Na::Renderer& main_renderer = GameContext::MainRenderer();
 
 		static auto x_StartTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::high_resolution_clock::now() - x_StartTime).count();
 
-		fd.bind_pipeline(m_Pipeline);
+		main_renderer.bind_pipeline(m_Pipeline);
 
 		PushConstantData pcd{
 			.view = glm::lookAt(
@@ -191,7 +192,7 @@ namespace ExampleApp {
 				0.1f, 10.0f
 			),
 		};
-		fd.set_push_constant(
+		main_renderer.set_push_constant(
 			Na::PushConstant{
 				.shader_stage = Na::ShaderStageBits::Vertex,
 				.size = sizeof(glm::mat4) * 2
@@ -210,8 +211,7 @@ namespace ExampleApp {
 		model1 = glm::rotate(model1, time * glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model1 = glm::rotate(model1, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-		m_InstanceBuffer.set_data(&instanceBufferData, fd);
-
-		m_IndexBuffer.draw(m_VertexBuffer, instanceBufferData.count(), fd);
+		main_renderer.set_storage_buffer(m_InstanceBuffer, &instanceBufferData);
+		main_renderer.draw_indexed(m_VertexBuffer, m_IndexBuffer, instanceBufferData.count());
 	}
 } // namespace ExampleApp

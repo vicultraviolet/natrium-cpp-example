@@ -11,6 +11,7 @@ namespace ExampleApp {
 		Na::LayerManager layer_manager;
 
 		Na::Window main_window;
+		Na::RendererCore main_renderer_core;
 		Na::Renderer main_renderer;
 
 		bool running;
@@ -24,13 +25,14 @@ namespace ExampleApp {
 
 		gameContextData = Na::tcalloc<GameContextData>();
 
-		new (&gameContextData->library_context) Na::Context(Na::Context::Initialize());
+		new (&gameContextData->library_context)    Na::Context(Na::Context::Initialize());
 
-		new (&gameContextData->asset_registry)  Na::AssetRegistry("assets/", Na::Context::GetExecDir());
-		new (&gameContextData->layer_manager)   Na::LayerManager(1);
+		new (&gameContextData->asset_registry)     Na::AssetRegistry("assets/", Na::Context::GetExecDir());
+		new (&gameContextData->layer_manager)      Na::LayerManager(1);
 
-		new (&gameContextData->main_window)     Na::Window(1280, 720, "Example Application");
-		new (&gameContextData->main_renderer)   Na::Renderer(gameContextData->main_window);
+		new (&gameContextData->main_window)        Na::Window(1280, 720, "Example Application");
+		new (&gameContextData->main_renderer_core) Na::RendererCore(gameContextData->main_window);
+		new (&gameContextData->main_renderer)      Na::Renderer(gameContextData->main_renderer_core);
 
 		gameContextData->layer_manager.attach_layer(Na::CreateLayer<MainLayer>());
 	}
@@ -41,11 +43,12 @@ namespace ExampleApp {
 
 		gameContextData->layer_manager.detach_all();
 
-		gameContextData->asset_registry.~AssetRegistry();
-		gameContextData->layer_manager.~LayerManager();
-
-		gameContextData->main_window.destroy();
 		gameContextData->main_renderer.destroy();
+		gameContextData->main_renderer_core.destroy();
+		gameContextData->main_window.destroy();
+
+		gameContextData->layer_manager.~LayerManager();
+		gameContextData->asset_registry.~AssetRegistry();
 
 		gameContextData->library_context.Shutdown();
 
@@ -79,12 +82,11 @@ namespace ExampleApp {
 			if (gameContextData->main_window.minimized())
 				continue;
 
-			Na::FrameData& fd = gameContextData->main_renderer.begin_frame();
-			if (fd.skipped)
+			if (!gameContextData->main_renderer.begin_frame())
 				continue;
 
 			for (Na::LayerHandle<> layer : gameContextData->layer_manager)
-				layer->draw(fd);
+				layer->draw();
 
 			gameContextData->main_renderer.end_frame();
 		}
@@ -108,6 +110,11 @@ namespace ExampleApp {
 	Na::Window& GameContext::MainWindow(void)
 	{
 		return gameContextData->main_window;
+	}
+
+	Na::RendererCore& GameContext::MainRendererCore(void)
+	{
+		return gameContextData->main_renderer_core;
 	}
 
 	Na::Renderer& GameContext::MainRenderer(void)

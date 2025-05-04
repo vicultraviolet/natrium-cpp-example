@@ -16,7 +16,7 @@ namespace ExampleApp {
 
 		void on_event(Na::Event& e) override;
 		void update(double dt) override;
-		void draw(Na::FrameData& fd) override;
+		void draw(void) override;
 	private:
 		Na::Input m_Input;
 
