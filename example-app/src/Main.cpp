@@ -1,16 +1,10 @@
 #include "Pch.hpp"
-#include "Game.hpp"
+#include "GameContext.hpp"
 
 int main(int argc, char* argv[])
 {
-	Na::Context context = Na::Context::Initialize();
+	ExampleApp::GameContext context;
+	context.run();
 
-	{
-		// performance is better with heap allocation, i profiled
-		auto game = std::make_unique<ExampleApp::Game>();
-		game->run();
-	}
-
-	context.Shutdown();
 	return 0;
 }
