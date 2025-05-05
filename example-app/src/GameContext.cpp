@@ -47,8 +47,8 @@ namespace ExampleApp {
 		gameContextData->main_renderer_core.destroy();
 		gameContextData->main_window.destroy();
 
-		gameContextData->layer_manager.~LayerManager();
-		gameContextData->asset_registry.~AssetRegistry();
+		gameContextData->layer_manager.destroy();
+		gameContextData->asset_registry.destroy();
 
 		gameContextData->library_context.Shutdown();
 

@@ -86,7 +86,7 @@ namespace ExampleApp {
 		);
 
 		m_VertexBuffer = Na::VertexBuffer(model->vertex_data_size(), model->vertices().ptr());
-		m_IndexBuffer = Na::IndexBuffer((u32)model->index_count(), model->indices().ptr());
+		m_IndexBuffer = Na::IndexBuffer(model->index_count(), model->indices().ptr());
 
 		m_InstanceBuffer = Na::StorageBuffer(instanceBufferData.size(), main_renderer.core().settings());
 		m_InstanceBuffer.bind_to_pipeline(0, m_Pipeline);
