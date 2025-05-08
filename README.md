@@ -1,4 +1,6 @@
 # Natrium Example
+![image](https://github.com/user-attachments/assets/b0612146-77cb-4c91-ae71-a9ad62a359d1)
+
 ## Introduction
 Simple example application of the [Natrium C++ framework](https://github.com/vicultraviolet/natrium-cpp/)
 
