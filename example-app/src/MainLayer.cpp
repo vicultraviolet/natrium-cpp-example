@@ -89,10 +89,10 @@ namespace ExampleApp {
 		m_IndexBuffer = Na::IndexBuffer(model->index_count(), model->indices().ptr());
 
 		m_InstanceBuffer = Na::StorageBuffer(instanceBufferData.size(), main_renderer.core().settings());
-		m_InstanceBuffer.bind_to_pipeline(0, m_Pipeline);
+		m_Pipeline.bind_uniform(0, m_InstanceBuffer);
 
 		m_Texture = Na::Texture(*img, main_renderer.core().settings());
-		m_Texture.bind_to_pipeline(1, m_Pipeline);
+		m_Pipeline.bind_uniform(1, m_Texture);
 
 		GameContext::AssetRegistry().free_asset("texture.png");
 		GameContext::AssetRegistry().free_asset("tree/model.obj");
