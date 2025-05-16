@@ -1,1 +1,1 @@
-python3 Generate.py msbuild
+./natrium-cpp/dependencies/premake/bin/windows/premake5.exe vs2022

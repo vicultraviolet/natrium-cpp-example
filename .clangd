@@ -1,0 +1,11 @@
+CompileFlags:
+  Add:
+    - "-std=c++20"
+    - "-include=Natrium/PchBase.hpp"
+    - "-Inatrium-cpp/include/"
+    - "-Inatrium-cpp/src/Natrium/"
+    - "-Inatrium-cpp/dependencies/fmt/include"
+    - "-Inatrium-cpp/dependencies/glfw/include"
+    - "-Inatrium-cpp/dependencies/glm/"
+    - "-Inatrium-cpp/dependencies/stb/include"
+    - "-Inatrium-cpp/dependencies/tinyobjloader/include"

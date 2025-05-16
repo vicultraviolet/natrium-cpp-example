@@ -14,3 +14,6 @@ build/
 
 Makefile
 *.make
+
+compile_commands.json
+.cache/
