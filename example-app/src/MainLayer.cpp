@@ -30,7 +30,8 @@ namespace ExampleApp {
 		Na::Renderer& main_renderer = GameContext::MainRenderer();
 
 		Na::AssetHandle<Na::Model> model = GameContext::AssetRegistry().load_asset<Na::Model>("model.obj");
-		Na::AssetHandle<Na::Image> img = GameContext::AssetRegistry().load_asset<Na::Image>("texture.png");
+		Na::AssetHandle<Na::Image> img1 = GameContext::AssetRegistry().load_asset<Na::Image>("texture.png");
+		Na::AssetHandle<Na::Image> img2 = GameContext::AssetRegistry().load_asset<Na::Image>("texture2.png");
 
 		Na::ShaderModule vs = GameContext::AssetRegistry().create_shader_module_from_src(
 			"shaders/vertex.glsl",
@@ -90,11 +91,12 @@ namespace ExampleApp {
 
 		m_InstanceBuffer = Na::StorageBuffer(instanceBufferData.size(), main_renderer.core().settings());
 		m_Pipeline.bind_uniform(0, m_InstanceBuffer);
-
-		m_Texture = Na::Texture(*img, main_renderer.core().settings());
+		
+		m_Texture = Na::Texture({ img1, img2 }, main_renderer.core().settings());
 		m_Pipeline.bind_uniform(1, m_Texture);
 
 		GameContext::AssetRegistry().free_asset("texture.png");
+		GameContext::AssetRegistry().free_asset("texture2.png");
 		GameContext::AssetRegistry().free_asset("tree/model.obj");
 	}
 
