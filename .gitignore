@@ -17,3 +17,6 @@ Makefile
 
 compile_commands.json
 .cache/
+
+renderer_settings.json
+assets/engine

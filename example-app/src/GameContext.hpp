@@ -15,7 +15,6 @@ namespace ExampleApp {
 		[[nodiscard]] static Na::AssetRegistry& AssetRegistry(void);
 		[[nodiscard]] static Na::LayerManager&  LayerManager(void);
 		[[nodiscard]] static Na::Window&        MainWindow(void);
-		[[nodiscard]] static Na::RendererCore&  MainRendererCore(void);
 		[[nodiscard]] static Na::Renderer&      MainRenderer(void);
 	};
 	inline Na::Logger<> g_Logger{"ExampleApp", &std::cout};

@@ -28,18 +28,19 @@ namespace ExampleApp {
 	m_Camera{ glm::vec3(2.5f, 1.0f, 2.5f), glm::vec3(0.0f, 0.0f, 0.1f), 45.0f }
 	{
 		Na::Renderer& main_renderer = GameContext::MainRenderer();
+		Na::AssetRegistry& asset_registry = GameContext::AssetRegistry();
 
-		Na::AssetHandle<Na::Model> model = GameContext::AssetRegistry().load_asset<Na::Model>("model.obj");
-		Na::AssetHandle<Na::Image> img1 = GameContext::AssetRegistry().load_asset<Na::Image>("texture.png");
-		Na::AssetHandle<Na::Image> img2 = GameContext::AssetRegistry().load_asset<Na::Image>("texture2.png");
+		Na::AssetHandle<Na::Model> model = asset_registry.load_asset<Na::Model>("assets/model.obj");
+		Na::AssetHandle<Na::Image> img1  = asset_registry.load_asset<Na::Image>("assets/texture.png");
+		Na::AssetHandle<Na::Image> img2  = asset_registry.load_asset<Na::Image>("assets/texture2.png");
 
-		Na::ShaderModule vs = GameContext::AssetRegistry().create_shader_module_from_src(
-			"shaders/vertex.glsl",
+		Na::ShaderModule vs = asset_registry.create_shader_module_from_src(
+			"assets/shaders/vertex.glsl",
 			Na::ShaderStageBits::Vertex,
 			"main"
 		);
-		Na::ShaderModule fs = GameContext::AssetRegistry().create_shader_module_from_src(
-			"shaders/fragment.glsl",
+		Na::ShaderModule fs = asset_registry.create_shader_module_from_src(
+			"assets/shaders/fragment.glsl",
 			Na::ShaderStageBits::Fragment,
 			"main"
 		);
@@ -95,9 +96,9 @@ namespace ExampleApp {
 		m_Texture = Na::Texture({ img1, img2 }, main_renderer.core().settings());
 		m_Pipeline.bind_uniform(1, m_Texture);
 
-		GameContext::AssetRegistry().free_asset("texture.png");
-		GameContext::AssetRegistry().free_asset("texture2.png");
-		GameContext::AssetRegistry().free_asset("tree/model.obj");
+		GameContext::AssetRegistry().free_asset("assets/texture.png");
+		GameContext::AssetRegistry().free_asset("assets/texture2.png");
+		GameContext::AssetRegistry().free_asset("assets/model.obj");
 	}
 
 	void MainLayer::on_event(Na::Event& e)

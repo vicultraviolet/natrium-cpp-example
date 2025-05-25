@@ -21,6 +21,7 @@ project "ExampleApp"
         "../natrium-cpp/include/",
         "../natrium-cpp/%{IncludeDirectories.fmt}",
         "../natrium-cpp/%{IncludeDirectories.glm}",
+        "../natrium-cpp/%{IncludeDirectories.nlohmann_json}",
     }
     links {
         "Natrium",
@@ -28,6 +29,10 @@ project "ExampleApp"
         "%{Libraries.stb}",
         "%{Libraries.glfw}",
         "%{Libraries.fmt}",
+    }
+
+    prebuildcommands {
+        "{COPYDIR} ../natrium-cpp/assets/ ../assets/engine/"
     }
 
     filter "system:linux"
