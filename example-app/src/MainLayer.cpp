@@ -24,9 +24,17 @@ namespace ExampleApp {
 	InstanceBufferData instanceBufferData{};
 
 	MainLayer::MainLayer(i64 priority)
-	: Na::Layer(priority),
-	m_Camera{ glm::vec3(2.5f, 1.0f, 2.5f), glm::vec3(0.0f, 0.0f, 0.1f), 45.0f }
+	: Na::Layer(priority)
 	{
+		m_Camera.pos = glm::vec3(2.5f, 1.0f, 2.5f);
+		m_Camera.eye = glm::vec3(0.0f, 0.0f, 0.0f);
+
+		m_Camera.fov = 45.0f;
+
+		glm::vec3 dir = glm::normalize(m_Camera.eye - m_Camera.pos);
+		m_Camera.yaw = glm::degrees(atan2(dir.z, dir.x));
+		m_Camera.pitch = glm::degrees(asin(dir.y));
+
 		Na::Renderer& main_renderer = GameContext::MainRenderer();
 		Na::AssetRegistry& asset_registry = GameContext::AssetRegistry();
 
@@ -104,73 +112,117 @@ namespace ExampleApp {
 	void MainLayer::on_event(Na::Event& e)
 	{
 		m_Input.on_event(e);
+
+		switch (e.type)
+		{
+		case Na::EventType::MouseButtonPressed:
+			this->_on_mouse_button_press(e.mouse_button_pressed);
+			break;
+		case Na::EventType::KeyPressed:
+			this->_on_key_press(e.key_pressed);
+			break;
+		case Na::EventType::MouseMoved:
+			this->_on_mouse_move(e.mouse_moved);
+			break;
+		}
+	}
+
+	void MainLayer::_on_mouse_button_press(Na::Event_MouseButtonPressed& e)
+	{
+		if (e.button == Na::MouseButtons::k_Left)
+		{
+			GameContext::MainWindow().capture_mouse();
+
+			this->_reset_mouse(m_Input.mouse_x(), m_Input.mouse_y());
+		}
+	}
+
+	void MainLayer::_on_key_press(Na::Event_KeyPressed& e)
+	{
+		switch (e.key)
+		{
+		case Na::Keys::k_Escape:
+			GameContext::MainWindow().release_mouse();
+			m_FirstMouse = true;
+			break;
+		}
+	}
+
+	void MainLayer::_on_mouse_move(Na::Event_MouseMoved& e)
+	{
+		if (GameContext::MainWindow().mouse_captured())
+			this->_update_camera(e.x, e.y);	
+	}
+
+	void MainLayer::_reset_mouse(float x, float y)
+	{
+		m_Camera.last_x = x;
+		m_Camera.last_y = y;
+		m_FirstMouse = false;
+	}
+
+	void MainLayer::_update_camera(float x, float y)
+	{
+		if (m_FirstMouse)
+			this->_reset_mouse(x, y);
+
+		float x_offset = x - m_Camera.last_x;
+		float y_offset = m_Camera.last_y - y;
+		m_Camera.last_x = x;
+		m_Camera.last_y = y;
+
+		float sensitivity = 0.1f;
+		x_offset *= sensitivity;
+		y_offset *= sensitivity;
+
+		m_Camera.yaw += x_offset;
+		m_Camera.pitch += y_offset;
+
+		if (m_Camera.pitch > 89.0f)
+			m_Camera.pitch = 89.0f;
+
+		if (m_Camera.pitch < -89.0f)
+			m_Camera.pitch = -89.0f;
+
+		glm::vec3 direction(
+			cos(glm::radians(m_Camera.yaw)) * cos(glm::radians(m_Camera.pitch)),
+			sin(glm::radians(m_Camera.pitch)),
+			sin(glm::radians(m_Camera.yaw)) * cos(glm::radians(m_Camera.pitch))
+		);
+		m_Camera.eye = m_Camera.pos + glm::normalize(direction);
 	}
 
 	void MainLayer::update(double dt)
 	{
-		float amount = 3.0f * (float)dt;
-		if (m_Input.key(Na::Keys::k_Q))
-		{
-			m_Camera.pos.y += amount;
-			m_Camera.eye.y += amount;
-		}
-		if (m_Input.key(Na::Keys::k_E))
-		{
-			m_Camera.pos.y -= amount;
-			m_Camera.eye.y -= amount;
-		}
+		float amount = 5.0f * (float)dt;
+
+		glm::vec3 forward = glm::normalize(m_Camera.eye - m_Camera.pos);
+		forward = glm::normalize(forward);
+
+		glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
+
+		glm::vec3 move(0.0f);
+
 		if (m_Input.key(Na::Keys::k_W))
-		{
-			m_Camera.pos.x -= amount;
-			m_Camera.eye.x -= amount;
-			m_Camera.pos.z -= amount;
-			m_Camera.eye.z -= amount;
-		}
-		if (m_Input.key(Na::Keys::k_A))
-		{
-			m_Camera.pos.x -= amount;
-			m_Camera.eye.x -= amount;
-			m_Camera.pos.z += amount;
-			m_Camera.eye.z += amount;
-		}
+			move += forward;
 		if (m_Input.key(Na::Keys::k_S))
-		{
-			m_Camera.pos.z += amount;
-			m_Camera.eye.z += amount;
-			m_Camera.pos.x += amount;
-			m_Camera.eye.x += amount;
-		}
+			move -= forward;
 		if (m_Input.key(Na::Keys::k_D))
+			move += right;
+		if (m_Input.key(Na::Keys::k_A))
+			move -= right;
+
+		if (glm::length(move) > 0.0f)
 		{
-			m_Camera.pos.x += amount;
-			m_Camera.eye.x += amount;
-			m_Camera.pos.z -= amount;
-			m_Camera.eye.z -= amount;
+			move = glm::normalize(move) * amount;
+			m_Camera.pos += move;
+			m_Camera.eye += move;
 		}
+
 		if (m_Input.key(Na::Keys::k_Minus))
-		{
 			m_Camera.fov -= amount * 20.0f;
-		}
 		if (m_Input.key(Na::Keys::k_Equal))
-		{
 			m_Camera.fov += amount * 20.0f;
-		}
-		if (m_Input.key(Na::Keys::k_Up))
-		{
-			m_Camera.eye.y += amount;
-		}
-		if (m_Input.key(Na::Keys::k_Down))
-		{
-			m_Camera.eye.y -= amount;
-		}
-		if (m_Input.key(Na::Keys::k_Left))
-		{
-			m_Camera.eye.z += amount;
-		}
-		if (m_Input.key(Na::Keys::k_Right))
-		{
-			m_Camera.eye.z -= amount;
-		}
 	}
 
 	void MainLayer::draw(void)

@@ -32,6 +32,7 @@ namespace ExampleApp {
 		new(&data->layer_manager) Na::LayerManager(1);
 
 		new(&data->main_window) Na::Window(1280, 720, "Example Application");
+		data->main_window.capture_mouse();
 
 		auto renderer_settings = data->asset_registry.load_renderer_settings("renderer_settings.json");
 		renderer_settings->set_max_anisotropy(renderer_settings->AnisotropyLimit());
