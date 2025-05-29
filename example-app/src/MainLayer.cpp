@@ -24,17 +24,8 @@ namespace ExampleApp {
 	InstanceBufferData instanceBufferData{};
 
 	MainLayer::MainLayer(i64 priority)
-	: Na::Layer(priority)
+	: Na::Layer(priority), m_CameraData(glm::vec3(2.5f, 1.0f, 2.5f))
 	{
-		m_Camera.pos = glm::vec3(2.5f, 1.0f, 2.5f);
-		m_Camera.eye = glm::vec3(0.0f, 0.0f, 0.0f);
-
-		m_Camera.fov = 45.0f;
-
-		glm::vec3 dir = glm::normalize(m_Camera.eye - m_Camera.pos);
-		m_Camera.yaw = glm::degrees(atan2(dir.z, dir.x));
-		m_Camera.pitch = glm::degrees(asin(dir.y));
-
 		Na::Renderer& main_renderer = GameContext::MainRenderer();
 		Na::AssetRegistry& asset_registry = GameContext::AssetRegistry();
 
@@ -133,7 +124,7 @@ namespace ExampleApp {
 		{
 			GameContext::MainWindow().capture_mouse();
 
-			this->_reset_mouse(m_Input.mouse_x(), m_Input.mouse_y());
+			m_CameraData.on_mouse_capture(glm::vec2(m_Input.mouse_x(), m_Input.mouse_y()));
 		}
 	}
 
@@ -143,7 +134,7 @@ namespace ExampleApp {
 		{
 		case Na::Keys::k_Escape:
 			GameContext::MainWindow().release_mouse();
-			m_FirstMouse = true;
+			m_CameraData.on_mouse_release();
 			break;
 		}
 	}
@@ -151,78 +142,24 @@ namespace ExampleApp {
 	void MainLayer::_on_mouse_move(Na::Event_MouseMoved& e)
 	{
 		if (GameContext::MainWindow().mouse_captured())
-			this->_update_camera(e.x, e.y);	
-	}
-
-	void MainLayer::_reset_mouse(float x, float y)
-	{
-		m_Camera.last_x = x;
-		m_Camera.last_y = y;
-		m_FirstMouse = false;
-	}
-
-	void MainLayer::_update_camera(float x, float y)
-	{
-		if (m_FirstMouse)
-			this->_reset_mouse(x, y);
-
-		float x_offset = x - m_Camera.last_x;
-		float y_offset = m_Camera.last_y - y;
-		m_Camera.last_x = x;
-		m_Camera.last_y = y;
-
-		float sensitivity = 0.1f;
-		x_offset *= sensitivity;
-		y_offset *= sensitivity;
-
-		m_Camera.yaw += x_offset;
-		m_Camera.pitch += y_offset;
-
-		if (m_Camera.pitch > 89.0f)
-			m_Camera.pitch = 89.0f;
-
-		if (m_Camera.pitch < -89.0f)
-			m_Camera.pitch = -89.0f;
-
-		glm::vec3 direction(
-			cos(glm::radians(m_Camera.yaw)) * cos(glm::radians(m_Camera.pitch)),
-			sin(glm::radians(m_Camera.pitch)),
-			sin(glm::radians(m_Camera.yaw)) * cos(glm::radians(m_Camera.pitch))
-		);
-		m_Camera.eye = m_Camera.pos + glm::normalize(direction);
+			m_CameraData.rotate_with_mouse(glm::vec2(e.x, e.y));
 	}
 
 	void MainLayer::update(double dt)
 	{
 		float amount = 5.0f * (float)dt;
-
-		glm::vec3 forward = glm::normalize(m_Camera.eye - m_Camera.pos);
-		forward = glm::normalize(forward);
-
-		glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
-
 		glm::vec3 move(0.0f);
 
 		if (m_Input.key(Na::Keys::k_W))
-			move += forward;
+			move.z = amount;
 		if (m_Input.key(Na::Keys::k_S))
-			move -= forward;
+			move.z = -amount;
 		if (m_Input.key(Na::Keys::k_D))
-			move += right;
+			move.x = amount;
 		if (m_Input.key(Na::Keys::k_A))
-			move -= right;
+			move.x = -amount;
 
-		if (glm::length(move) > 0.0f)
-		{
-			move = glm::normalize(move) * amount;
-			m_Camera.pos += move;
-			m_Camera.eye += move;
-		}
-
-		if (m_Input.key(Na::Keys::k_Minus))
-			m_Camera.fov -= amount * 20.0f;
-		if (m_Input.key(Na::Keys::k_Equal))
-			m_Camera.fov += amount * 20.0f;
+		m_CameraData.move(move);
 	}
 
 	void MainLayer::draw(void)
@@ -236,16 +173,11 @@ namespace ExampleApp {
 		main_renderer.bind_pipeline(m_Pipeline);
 
 		PushConstantData pcd{
-			.view = glm::lookAt(
-				m_Camera.pos,
-				m_Camera.eye,
-				glm::vec3(0.0f, 1.0f, 0.0f)
-			),
-			.proj = glm::perspective(
-				glm::radians(m_Camera.fov),
+			.view = m_CameraData.calculate_view(),
+			.proj = m_CameraData.calculate_projection(
 				(float)main_window.width() / (float)main_window.height(),
-				0.1f, 10.0f
-			),
+				0.01f, 100.0f
+			)
 		};
 		main_renderer.set_push_constant(
 			Na::PushConstant{
