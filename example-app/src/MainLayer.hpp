@@ -26,7 +26,7 @@ namespace ExampleApp {
 
 		Na::Texture m_Texture;
 
-		Na::CameraData m_CameraData;
+		Na::Camera3dData m_Camera;
 	};
 } // namespace ExampleApp
 

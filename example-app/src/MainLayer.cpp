@@ -24,7 +24,7 @@ namespace ExampleApp {
 	InstanceBufferData instanceBufferData{};
 
 	MainLayer::MainLayer(i64 priority)
-	: Na::Layer(priority), m_CameraData(glm::vec3(2.5f, 1.0f, 2.5f))
+	: Na::Layer(priority), m_Camera(glm::vec3(2.5f, 1.0f, 2.5f))
 	{
 		Na::Renderer& main_renderer = GameContext::MainRenderer();
 		Na::AssetRegistry& asset_registry = GameContext::AssetRegistry();
@@ -124,7 +124,7 @@ namespace ExampleApp {
 		{
 			GameContext::MainWindow().capture_mouse();
 
-			m_CameraData.on_mouse_capture(glm::vec2(m_Input.mouse_x(), m_Input.mouse_y()));
+			m_Camera.on_mouse_capture(glm::vec2(m_Input.mouse_x(), m_Input.mouse_y()));
 		}
 	}
 
@@ -134,7 +134,7 @@ namespace ExampleApp {
 		{
 		case Na::Keys::k_Escape:
 			GameContext::MainWindow().release_mouse();
-			m_CameraData.on_mouse_release();
+			m_Camera.on_mouse_release();
 			break;
 		}
 	}
@@ -142,7 +142,7 @@ namespace ExampleApp {
 	void MainLayer::_on_mouse_move(Na::Event_MouseMoved& e)
 	{
 		if (GameContext::MainWindow().mouse_captured())
-			m_CameraData.rotate_with_mouse(glm::vec2(e.x, e.y));
+			m_Camera.rotate_with_mouse(glm::vec2(e.x, e.y));
 	}
 
 	void MainLayer::update(double dt)
@@ -159,7 +159,7 @@ namespace ExampleApp {
 		if (m_Input.key(Na::Keys::k_A))
 			move.x = -amount;
 
-		m_CameraData.move(move);
+		m_Camera.move(move);
 	}
 
 	void MainLayer::draw(void)
@@ -173,8 +173,8 @@ namespace ExampleApp {
 		main_renderer.bind_pipeline(m_Pipeline);
 
 		PushConstantData pcd{
-			.view = m_CameraData.calculate_view(),
-			.proj = m_CameraData.calculate_projection(
+			.view = m_Camera.calculate_view(),
+			.proj = m_Camera.calculate_projection(
 				(float)main_window.width() / (float)main_window.height(),
 				0.01f, 100.0f
 			)
