@@ -4,11 +4,6 @@
 #include "GameContext.hpp"
 
 namespace ExampleApp {
-	struct PushConstantData {
-		alignas(16) glm::mat4 view;
-		alignas(16) glm::mat4 proj;
-	};
-
 	struct Instance {
 		glm::mat4 model;
 	};
@@ -24,10 +19,15 @@ namespace ExampleApp {
 	InstanceBufferData instanceBufferData{};
 
 	MainLayer::MainLayer(i64 priority)
-	: Na::Layer(priority), m_Camera(glm::vec3(2.5f, 1.0f, 2.5f))
+	: Na::Layer(priority),
+	m_Camera(glm::vec3(2.5f, 1.0f, 2.5f))
 	{
 		Na::Renderer& main_renderer = GameContext::MainRenderer();
 		Na::AssetRegistry& asset_registry = GameContext::AssetRegistry();
+
+		m_Camera.set_aspect_ratio(
+			(float)GameContext::MainWindow().width() / (float)GameContext::MainWindow().height()
+		);
 
 		Na::AssetHandle<Na::Model> model = asset_registry.load_asset<Na::Model>("assets/model.obj");
 		Na::AssetHandle<Na::Image> img1  = asset_registry.load_asset<Na::Image>("assets/texture.png");
@@ -81,7 +81,7 @@ namespace ExampleApp {
 			Na::PushConstantLayout{
 				Na::PushConstant{
 					.shader_stage = Na::ShaderStageBits::Vertex,
-					.size = sizeof(PushConstantData)
+					.size = sizeof(Na::CameraMatrices)
 				}
 			}
 		);
@@ -106,6 +106,11 @@ namespace ExampleApp {
 
 		switch (e.type)
 		{
+		case Na::EventType::WindowResized:
+			m_Camera.set_aspect_ratio(
+				(float)e.window_resized.width / (float)e.window_resized.height
+			);
+			break;
 		case Na::EventType::MouseButtonPressed:
 			this->_on_mouse_button_press(e.mouse_button_pressed);
 			break;
@@ -172,19 +177,12 @@ namespace ExampleApp {
 
 		main_renderer.bind_pipeline(m_Pipeline);
 
-		PushConstantData pcd{
-			.view = m_Camera.calculate_view(),
-			.proj = m_Camera.calculate_projection(
-				(float)main_window.width() / (float)main_window.height(),
-				0.01f, 100.0f
-			)
-		};
 		main_renderer.set_push_constant(
 			Na::PushConstant{
 				.shader_stage = Na::ShaderStageBits::Vertex,
-				.size = sizeof(glm::mat4) * 2
+				.size = sizeof(Na::CameraMatrices)
 			},
-			&pcd,
+			&m_Camera.matrices(),
 			m_Pipeline
 		);
 
@@ -193,6 +191,7 @@ namespace ExampleApp {
 
 		model0 = glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.5f, 0.2f));
 		model0 = glm::rotate(model0, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
 		model1 = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.5f, 0.7f));
 		model1 = glm::scale(model1, glm::vec3(0.3f, 0.3f, 0.3f));
 		model1 = glm::rotate(model1, time * glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
