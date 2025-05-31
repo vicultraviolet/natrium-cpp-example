@@ -197,7 +197,7 @@ namespace ExampleApp {
 		model1 = glm::rotate(model1, time * glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model1 = glm::rotate(model1, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-		main_renderer.set_descriptor_buffer(&m_InstanceBuffer, &instanceBufferData);
+		main_renderer.set_descriptor_buffer(m_InstanceBuffer, &instanceBufferData);
 		main_renderer.draw_indexed(m_VertexBuffer, m_IndexBuffer, instanceBufferData.count());
 	}
 } // namespace ExampleApp
