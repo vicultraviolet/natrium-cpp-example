@@ -17,7 +17,7 @@ namespace ExampleApp {
 		[[nodiscard]] static Na::Window&        MainWindow(void);
 		[[nodiscard]] static Na::Renderer&      MainRenderer(void);
 	};
-	inline Na::Logger<> g_Logger{"ExampleApp", &std::cout};
+	inline Na::Logger<> g_Logger{"ExampleApp"};
 } // namespace ExampleApp
 
 #endif // EXAMPLE_APP_GAME_HPP
