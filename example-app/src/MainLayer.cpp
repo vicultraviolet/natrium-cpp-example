@@ -1,8 +1,6 @@
 #include "Pch.hpp"
 #include "MainLayer.hpp"
 
-#include "GameContext.hpp"
-
 namespace ExampleApp {
 	struct Instance {
 		glm::mat4 model;
@@ -22,16 +20,19 @@ namespace ExampleApp {
 	: Na::Layer(priority),
 	m_Camera(glm::vec3(2.5f, 1.0f, 2.5f))
 	{
-		Na::Renderer& main_renderer = GameContext::MainRenderer();
-		Na::AssetRegistry& asset_registry = GameContext::AssetRegistry();
+		Na::Window& main_window = Na::Application::Get().window();
+		Na::Renderer& main_renderer = Na::Application::Get().renderer();
+		Na::AssetRegistry& asset_registry = Na::Application::Get().asset_registry();
+
+		auto renderer_settings = asset_registry.load_renderer_settings("renderer_settings.json");
 
 		m_Camera.set_aspect_ratio(
-			(float)GameContext::MainWindow().width() / (float)GameContext::MainWindow().height()
+			(float)main_window.width() / (float)main_window.height()
 		);
 
-		Na::AssetHandle<Na::Model> model = asset_registry.load_asset<Na::Model>("assets/model.obj");
-		Na::AssetHandle<Na::Image> img1  = asset_registry.load_asset<Na::Image>("assets/texture.png");
-		Na::AssetHandle<Na::Image> img2  = asset_registry.load_asset<Na::Image>("assets/texture2.png");
+		auto model = asset_registry.load_asset<Na::Model>("assets/model.obj");
+		auto img1  = asset_registry.load_asset<Na::Image>("assets/texture.png");
+		auto img2  = asset_registry.load_asset<Na::Image>("assets/texture2.png");
 
 		Na::ShaderModule vs = asset_registry.create_shader_module_from_src(
 			"assets/shaders/vertex.glsl",
@@ -89,15 +90,15 @@ namespace ExampleApp {
 		m_VertexBuffer = Na::VertexBuffer(model->vertex_data_size(), model->vertices().ptr());
 		m_IndexBuffer = Na::IndexBuffer(model->index_count(), model->indices().ptr());
 
-		m_InstanceBuffer = Na::StorageBuffer(instanceBufferData.size(), main_renderer.core().settings());
+		m_InstanceBuffer = Na::StorageBuffer(instanceBufferData.size(), renderer_settings);
 		m_Pipeline.bind_uniform(0, m_InstanceBuffer);
 		
-		m_Texture = Na::Texture({ img1, img2 }, main_renderer.core().settings());
+		m_Texture = Na::Texture({ img1, img2 }, renderer_settings);
 		m_Pipeline.bind_uniform(1, m_Texture);
 
-		GameContext::AssetRegistry().free_asset("assets/texture.png");
-		GameContext::AssetRegistry().free_asset("assets/texture2.png");
-		GameContext::AssetRegistry().free_asset("assets/model.obj");
+		asset_registry.free_asset("assets/texture.png");
+		asset_registry.free_asset("assets/texture2.png");
+		asset_registry.free_asset("assets/model.obj");
 	}
 
 	void MainLayer::on_event(Na::Event& e)
@@ -125,20 +126,23 @@ namespace ExampleApp {
 
 	void MainLayer::_on_mouse_button_press(Na::Event_MouseButtonPressed& e)
 	{
+		Na::Window& main_window = Na::Application::Get().window();
+
 		if (e.button == Na::MouseButtons::k_Left)
 		{
-			GameContext::MainWindow().capture_mouse();
-
+			main_window.capture_mouse();
 			m_Camera.on_mouse_capture(glm::vec2(m_Input.mouse_x(), m_Input.mouse_y()));
 		}
 	}
 
 	void MainLayer::_on_key_press(Na::Event_KeyPressed& e)
 	{
+		Na::Window& main_window = Na::Application::Get().window();
+
 		switch (e.key)
 		{
 		case Na::Keys::k_Escape:
-			GameContext::MainWindow().release_mouse();
+			main_window.release_mouse();
 			m_Camera.on_mouse_release();
 			break;
 		}
@@ -146,7 +150,9 @@ namespace ExampleApp {
 
 	void MainLayer::_on_mouse_move(Na::Event_MouseMoved& e)
 	{
-		if (GameContext::MainWindow().mouse_captured())
+		Na::Window& main_window = Na::Application::Get().window();
+
+		if (main_window.mouse_captured())
 			m_Camera.rotate_with_mouse(glm::vec2(e.x, e.y));
 	}
 
@@ -169,8 +175,8 @@ namespace ExampleApp {
 
 	void MainLayer::draw(void)
 	{
-		Na::Window& main_window = GameContext::MainWindow();
-		Na::Renderer& main_renderer = GameContext::MainRenderer();
+		Na::Window& main_window = Na::Application::Get().window();
+		Na::Renderer& main_renderer = Na::Application::Get().renderer();
 
 		static auto x_StartTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::high_resolution_clock::now() - x_StartTime).count();
