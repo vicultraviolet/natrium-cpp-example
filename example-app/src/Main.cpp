@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 #endif // APP_HEAP
 
 	app.create_layer<ExampleApp::MainLayer>(0);
-	app.create_layer<Na::ImGuiLayer>(app.renderer(), 1, true);
+	app.create_layer<Na::ImGuiLayer>(app.renderer(), 1);
 	app.run();
 	return 0;
 }

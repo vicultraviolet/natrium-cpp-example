@@ -204,13 +204,29 @@ namespace ExampleApp {
 		glm::mat4& model0 = instanceBufferData.instance_data[0].model;
 		glm::mat4& model1 = instanceBufferData.instance_data[1].model;
 
-		model0 = glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.5f, 0.2f));
-		model0 = glm::rotate(model0, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		static glm::vec3 pos0{ -1.0f,  0.5f,  0.2f };
+		static glm::vec3 scl0{  1.0f,  1.0f,  1.0f };
+		static glm::vec3 pos1{  1.0f,  0.5f,  0.7f };
+		static glm::vec3 scl1{  0.5f,  0.5f,  0.5f };
 
-		model1 = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.5f, 0.7f));
-		model1 = glm::scale(model1, glm::vec3(0.3f, 0.3f, 0.3f));
-		model1 = glm::rotate(model1, time * glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model1 = glm::rotate(model1, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		ImGui::Begin("Instance Data");
+
+		ImGui::DragFloat3("Model 0 Position", glm::value_ptr(pos0), 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Model 0 Scale", glm::value_ptr(scl0), 0.01f, -10.0f, 10.0f);
+
+		ImGui::DragFloat3("Model 1 Position", glm::value_ptr(pos1), 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3("Model 1 Scale", glm::value_ptr(scl1), 0.01f, -10.0f, 10.0f);
+
+		ImGui::End();
+
+		model0 = glm::translate(glm::mat4(1.0f), pos0);
+		model0 = glm::rotate(model0, glm::radians(90.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model0 = glm::scale(model0, scl0);
+
+		model1 = glm::translate(glm::mat4(1.0f), pos1);
+		model1 = glm::rotate(model1, glm::radians(90.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model1 = glm::rotate(model1, time * glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model1 = glm::scale(model1, scl1);
 
 		main_renderer.set_descriptor_buffer(m_InstanceBuffer, &instanceBufferData);
 		main_renderer.draw_indexed(m_VertexBuffer, m_IndexBuffer, instanceBufferData.count());
