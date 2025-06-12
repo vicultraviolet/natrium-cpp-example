@@ -20,3 +20,5 @@ compile_commands.json
 
 renderer_settings.json
 assets/engine
+
+imgui.ini

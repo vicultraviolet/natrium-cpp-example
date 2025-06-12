@@ -131,6 +131,10 @@ namespace ExampleApp {
 		if (e.button == Na::MouseButtons::k_Left)
 		{
 			main_window.capture_mouse();
+
+			if (auto imgui_layer = Na::Application::Get().imgui_layer().lock())
+				imgui_layer->set_enabled(false);
+
 			m_Camera.on_mouse_capture(glm::vec2(m_Input.mouse_x(), m_Input.mouse_y()));
 		}
 	}
@@ -143,7 +147,12 @@ namespace ExampleApp {
 		{
 		case Na::Keys::k_Escape:
 			main_window.release_mouse();
+
 			m_Camera.on_mouse_release();
+
+			if (auto imgui_layer = Na::Application::Get().imgui_layer().lock())
+				imgui_layer->set_enabled(true);
+
 			break;
 		}
 	}

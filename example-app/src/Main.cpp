@@ -9,16 +9,17 @@ int main(int argc, char* argv[])
 		"assets/engine/", "bin/shaders/",
 		"renderer_settings.json"
 	);
-	app.create_layer<ExampleApp::MainLayer>();
-	app.run();
 #else
-	auto app = Na::UniqueRef<Na::Application>::Make(
+	auto _app = Na::UniqueRef<Na::Application>::Make(
 		1280, 720, "Natrium Example", // window
 		"assets/engine/", "bin/shaders/",
 		"renderer_settings.json"
 	);
-	app->create_layer<ExampleApp::MainLayer>();
-	app->run();
+	Na::Application& app = *_app;
 #endif // APP_HEAP
+
+	app.create_layer<ExampleApp::MainLayer>(0);
+	app.create_layer<Na::ImGuiLayer>(app.renderer(), 1, true);
+	app.run();
 	return 0;
 }

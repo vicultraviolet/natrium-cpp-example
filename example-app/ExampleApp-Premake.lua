@@ -21,14 +21,17 @@ project "ExampleApp"
         "../natrium-cpp/include/",
         "../natrium-cpp/%{IncludeDirectories.fmt}",
         "../natrium-cpp/%{IncludeDirectories.glm}",
+        "../natrium-cpp/%{IncludeDirectories.imgui}",
         "../natrium-cpp/%{IncludeDirectories.nlohmann_json}",
+        "../natrium-cpp/dependencies/"
     }
     links {
         "Natrium",
         "%{Libraries.tiny_obj_loader}",
         "%{Libraries.stb}",
+        "%{Libraries.imgui}",
         "%{Libraries.glfw}",
-        "%{Libraries.fmt}",
+        "%{Libraries.fmt}"
     }
 
     prebuildcommands {
