@@ -51,22 +51,7 @@ namespace ExampleApp {
 				vs.pipeline_shader_info(),
 				fs.pipeline_shader_info()
 			},
-			Na::ShaderAttributeLayout{
-				Na::ShaderAttributeBinding{
-					.binding = 0,
-					.input_rate = Na::AttributeInputRate::Vertex,
-					.attributes = {
-						Na::ShaderAttribute{
-							.location = 0,
-							.type = Na::ShaderAttributeType::Vec3
-						},
-						Na::ShaderAttribute{
-							.location = 1,
-							.type = Na::ShaderAttributeType::Vec2
-						}
-					}
-				}
-			},
+			Na::Model::ShaderLayout(),
 			Na::ShaderUniformLayout{
 				Na::ShaderUniform{
 					.binding = 0,
@@ -167,6 +152,8 @@ namespace ExampleApp {
 
 	void MainLayer::update(double dt)
 	{
+		m_DeltaTime = dt;
+
 		float amount = 5.0f * (float)dt;
 		glm::vec3 move(0.0f);
 
@@ -208,6 +195,12 @@ namespace ExampleApp {
 		static glm::vec3 scl0{  1.0f,  1.0f,  1.0f };
 		static glm::vec3 pos1{  1.0f,  0.5f,  0.7f };
 		static glm::vec3 scl1{  0.5f,  0.5f,  0.5f };
+
+		ImGui::Begin("Debug");
+
+		ImGui::Text("FPS: %.2f", 1.0f / m_DeltaTime);
+
+		ImGui::End();
 
 		ImGui::Begin("Instance Data");
 
