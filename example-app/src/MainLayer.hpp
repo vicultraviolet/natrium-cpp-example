@@ -27,8 +27,6 @@ namespace ExampleApp {
 		Na::Texture m_Texture;
 
 		Na::Camera3dData m_Camera;
-
-		double m_DeltaTime = 0.0;
 	};
 } // namespace ExampleApp
 

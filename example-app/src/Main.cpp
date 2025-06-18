@@ -3,6 +3,9 @@
 
 int main(int argc, char* argv[])
 {
+	Na::InitInfo init_info{};
+	Na::Context context(init_info);
+
 	auto app = Na::UniqueRef<Na::Application>::Make(
 		1280, 720, "Natrium Example", // window
 		"assets/engine/", "bin/shaders/",

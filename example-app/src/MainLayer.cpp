@@ -152,8 +152,6 @@ namespace ExampleApp {
 
 	void MainLayer::update(double dt)
 	{
-		m_DeltaTime = dt;
-
 		float amount = 5.0f * (float)dt;
 		glm::vec3 move(0.0f);
 
@@ -198,7 +196,7 @@ namespace ExampleApp {
 
 		ImGui::Begin("Debug");
 
-		ImGui::Text("FPS: %.2f", 1.0f / m_DeltaTime);
+		ImGui::Text("Average FPS: %llu", Na::Application::Get().average_fps());
 
 		ImGui::End();
 
