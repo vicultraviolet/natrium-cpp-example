@@ -20,13 +20,14 @@ int main(int argc, char* argv[])
 	logger.print(Na::Error,  "Hello, world!");
 	logger.print(Na::Fatal,  "Hello, world!");
 
-	logger.print_raw("This is a raw message!\n");
-
 	logger.printf(Na::Info, "This is a formatted message: {}", 42);
+
+	logger.print_raw("This is a raw message!\n");
 	logger.printf_raw("This is a raw formatted message: {}\n", 42);
 
 	logger.print_to(std::cerr, Na::Info, "This message was printed to std::cerr!");
-	logger.print_raw_to(std::cerr, "This message was printed raw to std::cerr!\n");
+	logger.print_raw_to(std::cerr, "This is a raw message printed to std::cerr!\n");
+	logger.printf_raw_to(std::cerr, "This is a formatted message printed to std::cerr: {}\n", 42);
 
 	return 0;
 }
