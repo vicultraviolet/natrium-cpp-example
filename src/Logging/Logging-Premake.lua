@@ -1,5 +1,5 @@
-project "ExampleApp"
-    location "./"
+project "LoggingExample"
+    location "../"
     targetname "%{prj.name}-bin"
     kind "ConsoleApp"
     staticruntime "off"
@@ -8,22 +8,18 @@ project "ExampleApp"
     cppdialect "C++20"
     systemversion "latest"
 
-    pchheader "Pch.hpp"
-    pchsource "src/Pch.cpp"
-
     files {
-        "src/**.hpp",
-        "src/**.cpp"
+        "Main.cpp"
     }
 
     includedirs {
-        "src/",
-        "../natrium-cpp/include/",
-        "../natrium-cpp/%{IncludeDirectories.fmt}",
-        "../natrium-cpp/%{IncludeDirectories.glm}",
-        "../natrium-cpp/%{IncludeDirectories.imgui}",
-        "../natrium-cpp/%{IncludeDirectories.nlohmann_json}",
-        "../natrium-cpp/dependencies/"
+        "./",
+        "%{wks.location}/natrium-cpp/include/",
+        "%{wks.location}/natrium-cpp/%{IncludeDirectories.fmt}",
+        "%{wks.location}/natrium-cpp/%{IncludeDirectories.glm}",
+        "%{wks.location}/natrium-cpp/%{IncludeDirectories.imgui}",
+        "%{wks.location}/natrium-cpp/%{IncludeDirectories.nlohmann_json}",
+        "%{wks.location}/natrium-cpp/dependencies/"
     }
     links {
         "Natrium",
@@ -32,10 +28,6 @@ project "ExampleApp"
         "%{Libraries.imgui}",
         "%{Libraries.glfw}",
         "%{Libraries.fmt}"
-    }
-
-    prebuildcommands {
-        "{COPYDIR} ../natrium-cpp/assets/ ../assets/engine/"
     }
 
     filter "system:linux"
@@ -70,7 +62,6 @@ project "ExampleApp"
         defines { "NA_CONFIG_RELEASE" }
 
     filter "configurations:dist"
-        kind "WindowedApp"
         optimize "speed"
         symbols "off"
         defines { "NA_CONFIG_DIST" }
