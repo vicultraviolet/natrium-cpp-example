@@ -22,6 +22,8 @@ int main(int argc, char* argv[])
 	Na::Window window(1280, 720, "Example");
 	Na::Renderer renderer(window, renderer_settings);
 
+	Na::DeltaTime dt;
+
 	while (true)
 	{
 		for (Na::Event& e : Na::PollEvents())
@@ -40,6 +42,9 @@ int main(int argc, char* argv[])
 				break;
 			}
 		}
+
+		dt.calculate();
+		u32 average_fps = 1.0 / dt;
 
 		// will crash if the window is minimized, so you should always check before rendering
 		if (window.minimized())

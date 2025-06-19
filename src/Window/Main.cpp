@@ -8,6 +8,8 @@ int main(int argc, char* argv[])
 
 	Na::Window window(1280, 720, "Example");
 
+	Na::DeltaTime dt;
+
 	while (true)
 	{
 		for (Na::Event& e : Na::PollEvents())
@@ -22,10 +24,14 @@ int main(int argc, char* argv[])
 					e.window->release_mouse();
 				break;
 			case Na::EventType::WindowClosed:
-				return 0;
+				goto End;
 			}
 		}
+
+		dt.calculate();
+		u32 average_fps = 1.0 / dt;
 	}
 
+End:
 	return 0;
 }
