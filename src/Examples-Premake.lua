@@ -1,4 +1,5 @@
 include "Logging/Logging-Premake.lua"
+include "Arena/Arena-Premake.lua"
 include "Window/Window-Premake.lua"
 include "Renderer/Renderer-Premake.lua"
 include "Sandbox/Sandbox-Premake.lua"
