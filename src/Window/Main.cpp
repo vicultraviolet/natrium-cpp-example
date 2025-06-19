@@ -3,8 +3,8 @@
 
 int main(int argc, char* argv[])
 {
-	Na::InitInfo init_info{};
-	Na::Context context(init_info);
+	Na::ContextInitInfo context_init_info{};
+	Na::Context context(context_init_info);
 
 	Na::Window window(1280, 720, "Example");
 

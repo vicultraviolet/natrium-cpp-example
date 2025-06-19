@@ -5,8 +5,11 @@ constexpr glm::vec4 k_ClearColor{ 0.1f, 0.08f, 0.15f, 1.0f };
 
 int main(int argc, char* argv[])
 {
-	Na::InitInfo init_info{};
-	Na::Context context(init_info);
+	Na::ContextInitInfo context_init_info{};
+	Na::Context context(context_init_info);
+
+	Na::DeviceInitInfo device_init_info{};
+	Na::Device device(device_init_info);
 
 	Na::AssetRegistry asset_registry("assets/engine/", "bin/shaders/");
 
@@ -14,7 +17,7 @@ int main(int argc, char* argv[])
 	auto renderer_settings = asset_registry.load_asset<Na::RendererSettings>("renderer_settings.json");
 
 	// sets anisotropy limit to the maximum supported by the GPU
-	renderer_settings->set_max_anisotropy(Na::RendererSettings::AnisotropyLimit());
+	renderer_settings->set_max_anisotropy(Na::Device::Limits::Anisotropy());
 
 	Na::Window window(1280, 720, "Example");
 	Na::Renderer renderer(window, renderer_settings);
@@ -51,7 +54,7 @@ int main(int argc, char* argv[])
 
 End:
 	// IMPORTANT: wait for the gpu to finish all operations before deleting any resources
-	VkContext::Get().wait_for_device();
+	Device::Wait();
 
 	return 0;
 }

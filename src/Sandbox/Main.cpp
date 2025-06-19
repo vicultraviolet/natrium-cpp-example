@@ -3,8 +3,11 @@
 
 int main(int argc, char* argv[])
 {
-	Na::InitInfo init_info{};
+	Na::ContextInitInfo init_info{};
 	Na::Context context(init_info);
+
+	Na::DeviceInitInfo device_init_info{};
+	Na::Device device(device_init_info);
 
 	auto app = Na::UniqueRef<Na::Application>::Make(
 		1280, 720, "Natrium Example", // window
