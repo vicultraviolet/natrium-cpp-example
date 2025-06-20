@@ -35,12 +35,12 @@ namespace ExampleApp {
 		auto img2  = asset_registry.load_asset<Na::Image>("assets/texture2.png");
 
 		Na::ShaderModule vs = asset_registry.create_shader_module_from_src(
-			"assets/shaders/vertex.glsl",
+			"assets/shaders/sandbox_vertex.glsl",
 			Na::ShaderStageBits::Vertex,
 			"main"
 		);
 		Na::ShaderModule fs = asset_registry.create_shader_module_from_src(
-			"assets/shaders/fragment.glsl",
+			"assets/shaders/sandbox_fragment.glsl",
 			Na::ShaderStageBits::Fragment,
 			"main"
 		);

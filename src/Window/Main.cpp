@@ -29,7 +29,9 @@ int main(int argc, char* argv[])
 		}
 
 		dt.calculate();
-		u32 average_fps = 1.0 / dt;
+		u32 average_fps = (u32)(1.0 / dt);
+
+		window.set_title(NA_FORMAT("FPS: {}", average_fps));
 	}
 
 End:
