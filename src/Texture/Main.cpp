@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 	);
 
 	Na::VertexBuffer vbo(k_Vertices.size() * sizeof(VertexData), k_Vertices.data());
-	Na::IndexBuffer ibo(k_Indices.size(), k_Indices.data());
+	Na::IndexBuffer ibo((u32)k_Indices.size(), k_Indices.data());
 
 	Na::Texture texture(img, renderer.settings());
 	pipeline.bind_uniform(0, texture);

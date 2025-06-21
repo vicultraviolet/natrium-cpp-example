@@ -40,6 +40,7 @@ int main(int argc, char* argv[])
 
 		{
 			auto shared2 = arena.make_shared("Shared");
+
 			shared = shared2;
 		}
 
@@ -62,6 +63,7 @@ int main(int argc, char* argv[])
 
 	{
 		Na::Arena<Dummy>::ViewHandle view2 = arena.make_view("View2");
+
 		arena.remove_at(view2.index());
 	}
 
