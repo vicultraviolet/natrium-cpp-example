@@ -36,12 +36,12 @@ namespace ExampleApp {
 
 		Na::ShaderModule vs = asset_registry.create_shader_module_from_src(
 			"assets/shaders/sandbox_vertex.glsl",
-			Na::ShaderStageBits::Vertex,
+			Na::ShaderStage::Vertex,
 			"main"
 		);
 		Na::ShaderModule fs = asset_registry.create_shader_module_from_src(
 			"assets/shaders/sandbox_fragment.glsl",
-			Na::ShaderStageBits::Fragment,
+			Na::ShaderStage::Fragment,
 			"main"
 		);
 
@@ -56,19 +56,16 @@ namespace ExampleApp {
 				Na::ShaderUniform{
 					.binding = 0,
 					.type = Na::ShaderUniformType::StorageBuffer,
-					.shader_stage = Na::ShaderStageBits::Vertex
+					.shader_stage = Na::ShaderStage::Vertex
 				},
 				Na::ShaderUniform{
 					.binding = 1,
 					.type = Na::ShaderUniformType::Texture,
-					.shader_stage = Na::ShaderStageBits::Fragment
+					.shader_stage = Na::ShaderStage::Fragment
 				}
 			},
 			Na::PushConstantLayout{
-				Na::PushConstant{
-					.shader_stage = Na::ShaderStageBits::Vertex,
-					.size = sizeof(Na::CameraMatrices)
-				}
+				Na::Camera3dData::PushConstantSpecs()
 			}
 		);
 
@@ -178,10 +175,7 @@ namespace ExampleApp {
 		main_renderer.bind_pipeline(m_Pipeline);
 
 		main_renderer.set_push_constant(
-			Na::PushConstant{
-				.shader_stage = Na::ShaderStageBits::Vertex,
-				.size = sizeof(Na::CameraMatrices)
-			},
+			Na::Camera3dData::PushConstantSpecs(),
 			&m_Camera.matrices(),
 			m_Pipeline
 		);
