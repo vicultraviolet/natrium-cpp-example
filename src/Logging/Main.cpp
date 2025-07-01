@@ -1,11 +1,12 @@
-#include <Natrium/PchBase.hpp>
-#include <Natrium/Natrium.hpp>
+#include "Pch.hpp"
+
+#include <Natrium/Core/Logger.hpp>
 
 int main(int argc, char* argv[])
 {
 	// the template argument is optional
 	// in Distribution builds, it defaults to false, disabling all logging
-	Na::Logger<> logger{ "Example" };
+	Na::Logger<> logger{ "Logger" };
 
 	// when you don't specify the output stream, it defaults to std::cout
 	

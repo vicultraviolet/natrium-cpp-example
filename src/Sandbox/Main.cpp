@@ -3,22 +3,30 @@
 
 int main(int argc, char* argv[])
 {
-	Na::ContextInitInfo init_info{};
-	Na::Context context(init_info);
+	Na::ContextInitInfo context_info{};
+	Na::Context context(context_info);
 
-	Na::DeviceInitInfo device_init_info{};
-	Na::Device device(device_init_info);
+	Na::DeviceInitInfo device_info
+	{
+		.backend = Na::DeviceBackend::Vulkan
+	};
+	Na::Device device(device_info);
 
-	auto app = Na::UniqueRef<Na::Application>::Make(
-		1280, 720, "Natrium Example", // window
-		"assets/engine/", "bin/shaders/",
-		"renderer_settings.json"
-	);
+	Na::ApplicationSettings app_settings
+	{
+		.window_width = 1280,
+		.window_height = 720,
+		.window_title = "Natrium Sandbox",
+		.engine_assets_directory = "assets/engine",
+		.shader_output_directory = "bin/shaders",
+		.renderer_settings_path = "renderer_settings.json"
+	};
+	Na::Application app(app_settings);
 
-	app->create_layer<ExampleApp::MainLayer>(0);
-	app->create_layer<Na::ImGuiLayer>(app->renderer(), 1);
+	app.create_layer<Sandbox::MainLayer>(0);
+	app.create_layer<Na::ImGuiLayer>(app.renderer(), 1);
 
-	app->run();
+	app.run();
 
 	return 0;
 }

@@ -1,7 +1,7 @@
 #include "Pch.hpp"
 #include "MainLayer.hpp"
 
-namespace ExampleApp {
+namespace Sandbox {
 	struct Instance {
 		glm::mat4 model;
 	};
@@ -21,66 +21,58 @@ namespace ExampleApp {
 	m_Camera(glm::vec3(2.5f, 1.0f, 2.5f))
 	{
 		Na::Window& main_window = Na::Application::Get().window();
-		Na::Renderer& main_renderer = Na::Application::Get().renderer();
-		Na::AssetRegistry& asset_registry = Na::Application::Get().asset_registry();
+		auto renderer = Na::Application::Get().renderer();
+		Na::AssetManager& asset_manager = Na::Application::Get().asset_manager();
 
-		auto renderer_settings = asset_registry.load_renderer_settings("renderer_settings.json");
+		auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json"s);
+
+		auto img1 = asset_manager.load_asset<Na::ImageAsset>("assets/texture.png"s);
+		auto img2 = asset_manager.load_asset<Na::ImageAsset>("assets/texture2.png"s);
+
+		auto model = asset_manager.load_asset<Na::ModelAsset>("assets/model.obj"s);
+
+		auto vs = asset_manager.load_shader(
+			"assets/shaders/sandbox_vertex.glsl",
+			Na::Graphics::ShaderStage::Vertex
+		);
+
+		auto fs = asset_manager.load_shader(
+			"assets/shaders/sandbox_fragment.glsl",
+			Na::Graphics::ShaderStage::Fragment
+		);
 
 		m_Camera.set_aspect_ratio(
 			(float)main_window.width() / (float)main_window.height()
 		);
+		vs->set_push_constant_size((u32)m_Camera.matrices().size());
 
-		auto model = asset_registry.load_asset<Na::Model>("assets/model.obj");
-		auto img1  = asset_registry.load_asset<Na::Image>("assets/texture.png");
-		auto img2  = asset_registry.load_asset<Na::Image>("assets/texture2.png");
-
-		Na::ShaderModule vs = asset_registry.create_shader_module_from_src(
-			"assets/shaders/sandbox_vertex.glsl",
-			Na::ShaderStage::Vertex,
-			"main"
-		);
-		Na::ShaderModule fs = asset_registry.create_shader_module_from_src(
-			"assets/shaders/sandbox_fragment.glsl",
-			Na::ShaderStage::Fragment,
-			"main"
+		m_VertexBuffer = Na::Graphics::VertexBuffer::Make(
+			model->vertex_data_size(),
+			model->vertices().ptr()
 		);
 
-		m_Pipeline = Na::GraphicsPipeline(
-			main_renderer.core(),
-			Na::PipelineShaderInfos{
-				vs.pipeline_shader_info(),
-				fs.pipeline_shader_info()
-			},
-			Na::Model::ShaderLayout(),
-			Na::ShaderUniformLayout{
-				Na::ShaderUniform{
-					.binding = 0,
-					.type = Na::ShaderUniformType::StorageBuffer,
-					.shader_stage = Na::ShaderStage::Vertex
-				},
-				Na::ShaderUniform{
-					.binding = 1,
-					.type = Na::ShaderUniformType::Texture,
-					.shader_stage = Na::ShaderStage::Fragment
-				}
-			},
-			Na::PushConstantLayout{
-				Na::Camera3dData::PushConstantSpecs()
-			}
+		m_IndexBuffer = Na::Graphics::IndexBuffer::Make(
+			model->index_count(),
+			model->indices().ptr()
 		);
 
-		m_VertexBuffer = Na::VertexBuffer(model->vertex_data_size(), model->vertices().ptr());
-		m_IndexBuffer = Na::IndexBuffer(model->index_count(), model->indices().ptr());
-
-		m_InstanceBuffer = Na::StorageBuffer(instanceBufferData.size(), renderer_settings);
-		m_Pipeline.bind_uniform(0, m_InstanceBuffer);
+		m_InstanceBuffer = Na::Graphics::StorageBuffer::Make(
+			instanceBufferData.size(),
+			renderer_settings
+		);
+		vs->add_uniform(0, m_InstanceBuffer);
 		
-		m_Texture = Na::Texture({ img1, img2 }, renderer_settings);
-		m_Pipeline.bind_uniform(1, m_Texture);
+		m_Texture = Na::Graphics::Texture::Make(
+			{ img1, img2 },
+			renderer_settings
+		);
+		fs->add_uniform(1, m_Texture);
 
-		asset_registry.free_asset("assets/texture.png");
-		asset_registry.free_asset("assets/texture2.png");
-		asset_registry.free_asset("assets/model.obj");
+		m_Pipeline = Na::Graphics::Pipeline::Make(
+			renderer,
+			Na::ModelAsset::VertexAttributes(),
+			{ vs, fs }
+		);
 	}
 
 	void MainLayer::on_event(Na::Event& e)
@@ -167,16 +159,19 @@ namespace ExampleApp {
 	void MainLayer::draw(void)
 	{
 		Na::Window& main_window = Na::Application::Get().window();
-		Na::Renderer& main_renderer = Na::Application::Get().renderer();
+		auto renderer = Na::Application::Get().renderer();
 
 		static auto x_StartTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::high_resolution_clock::now() - x_StartTime).count();
 
-		main_renderer.bind_pipeline(m_Pipeline);
+		renderer->bind_pipeline(m_Pipeline);
 
-		main_renderer.set_push_constant(
-			Na::Camera3dData::PushConstantSpecs(),
-			&m_Camera.matrices(),
+		const Na::CameraMatrices& camera_matrices = m_Camera.matrices();
+		renderer->set_push_constant(
+			(u32)camera_matrices.size(),
+			Na::Graphics::ShaderStage::Vertex,
+			0,
+			&camera_matrices,
 			m_Pipeline
 		);
 
@@ -192,8 +187,8 @@ namespace ExampleApp {
 		model1 = glm::rotate(model1, time * glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model1 = glm::scale(model1, m_Instance1_Scale);
 
-		main_renderer.set_descriptor_buffer(m_InstanceBuffer, &instanceBufferData);
-		main_renderer.draw_indexed(m_VertexBuffer, m_IndexBuffer, instanceBufferData.count());
+		renderer->set_descriptor_buffer(m_InstanceBuffer, &instanceBufferData);
+		renderer->draw_indexed(m_VertexBuffer, m_IndexBuffer, instanceBufferData.count());
 	}
 
 	void MainLayer::imgui_draw(void)
@@ -214,4 +209,4 @@ namespace ExampleApp {
 
 		ImGui::End();
 	}
-} // namespace ExampleApp
+} // namespace Sandbox

@@ -1,5 +1,6 @@
-#include <Natrium/PchBase.hpp>
-#include <Natrium/Natrium.hpp>
+#include "Pch.hpp"
+
+#include <Natrium/Template/Arena.hpp>
 
 static Na::Logger<> logger{ "Arena" };
 
@@ -58,11 +59,11 @@ int main(int argc, char* argv[])
 	}
 
 	{
-		Na::Arena<Dummy>::ViewHandle view = arena.make_view("View");
+		auto view = arena.make_view("View");
 	}
 
 	{
-		Na::Arena<Dummy>::ViewHandle view2 = arena.make_view("View2");
+		auto view2 = arena.make_view("View2");
 
 		arena.remove_at(view2.index());
 	}

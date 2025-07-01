@@ -1,5 +1,6 @@
-#include <Natrium/PchBase.hpp>
-#include <Natrium/Natrium.hpp>
+#include "Pch.hpp"
+
+#include <Natrium/Template/References.hpp>
 
 static Na::Logger<> logger{ "Ref" };
 

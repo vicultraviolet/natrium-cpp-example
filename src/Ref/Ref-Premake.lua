@@ -8,8 +8,12 @@ project "RefExample"
     cppdialect "C++20"
     systemversion "latest"
 
+    pchheader "Pch.hpp"
+    pchsource "Pch.cpp"
+
     files {
-        "Main.cpp"
+        "**.hpp",
+        "**.cpp"
     }
 
     includedirs {
@@ -19,6 +23,7 @@ project "RefExample"
         "%{wks.location}/natrium-cpp/%{IncludeDirectories.glm}",
         "%{wks.location}/natrium-cpp/%{IncludeDirectories.imgui}",
         "%{wks.location}/natrium-cpp/%{IncludeDirectories.nlohmann_json}",
+        "%{wks.location}/natrium-cpp/%{IncludeDirectories.stduuid}",
         "%{wks.location}/natrium-cpp/dependencies/"
     }
     links {
@@ -62,6 +67,7 @@ project "RefExample"
         defines { "NA_CONFIG_RELEASE" }
 
     filter "configurations:dist"
+        kind "WindowedApp"
         optimize "speed"
         symbols "off"
         defines { "NA_CONFIG_DIST" }

@@ -1,4 +1,3 @@
-project "CameraExample"
     location "../"
     targetname "%{prj.name}-bin"
     kind "ConsoleApp"

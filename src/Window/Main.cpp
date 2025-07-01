@@ -1,17 +1,22 @@
-#include <Natrium/PchBase.hpp>
-#include <Natrium/Natrium.hpp>
+#include "Pch.hpp"
+
+#include <Natrium/Core/Context.hpp>
+#include <Natrium/Core/Window.hpp>
+#include <Natrium/Core/DeltaTime.hpp>
 
 int main(int argc, char* argv[])
 {
-	Na::ContextInitInfo context_init_info{};
-	Na::Context context(context_init_info);
+	Na::ContextInitInfo context_info{};
+	Na::Context context(context_info);
 
-	Na::Window window(1280, 720, "Example");
+	Na::Window window(1280, 720, "Window Example");
 
 	Na::DeltaTime dt;
 
 	while (true)
 	{
+		std::this_thread::sleep_for(16ms);
+
 		for (Na::Event& e : Na::PollEvents())
 		{
 			switch (e.type)

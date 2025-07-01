@@ -23,6 +23,7 @@ project "Sandbox"
         "%{wks.location}/natrium-cpp/%{IncludeDirectories.glm}",
         "%{wks.location}/natrium-cpp/%{IncludeDirectories.imgui}",
         "%{wks.location}/natrium-cpp/%{IncludeDirectories.nlohmann_json}",
+        "%{wks.location}/natrium-cpp/%{IncludeDirectories.stduuid}",
         "%{wks.location}/natrium-cpp/dependencies/"
     }
     links {
