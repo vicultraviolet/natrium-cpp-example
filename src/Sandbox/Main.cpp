@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 	Na::Application app(app_settings);
 
 	app.create_layer<Sandbox::MainLayer>(0);
-	app.create_layer<Na::ImGuiLayer>(app.renderer(), 1);
+	app.create_imgui_layer(app.renderer(), 1);
 
 	app.run();
 
