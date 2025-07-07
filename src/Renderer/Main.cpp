@@ -11,14 +11,14 @@ constexpr glm::vec4 k_ClearColor{ 0.1f, 0.08f, 0.15f, 1.0f };
 
 int main(int argc, char* argv[])
 {
-	Na::ContextInitInfo context_init_info{};
-	Na::Context context(context_init_info);
+	Na::ContextInitInfo context_info{};
+	Na::Context context(context_info);
 
-	Na::DeviceInitInfo device_init_info
+	Na::Graphics::DeviceInitInfo device_info
 	{
-		.backend = Na::DeviceBackend::Vulkan
+		.backend = Na::Graphics::DeviceBackend::Vulkan
 	};
-	Na::Device device(device_init_info);
+	auto device = Na::Graphics::Device::Make(device_info);
 
 	Na::AssetManager asset_manager("assets/engine/", "bin/shaders/");
 
@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 	auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json");
 
 	// sets anisotropy limit to the maximum supported by the GPU
-	renderer_settings->set_max_anisotropy(Na::Device::Limits::Anisotropy());
+	renderer_settings->set_max_anisotropy(device->limits()->max_anisotropy());
 
 	Na::Window window(1280, 720, "Renderer Example");
 	auto renderer = Na::Graphics::Renderer::Make(window, renderer_settings);
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 
 End:
 	// IMPORTANT: wait for the gpu to finish all operations before deleting any resources
-	device.wait_all();
+	device->wait_all();
 
 	return 0;
 }

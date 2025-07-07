@@ -25,11 +25,11 @@ int main(int argc, char* argv[])
 	Na::ContextInitInfo context_info{};
 	Na::Context context(context_info);
 
-	Na::DeviceInitInfo device_info
+	Na::Graphics::DeviceInitInfo device_info
 	{
-		.backend = Na::DeviceBackend::Vulkan
+		.backend = Na::Graphics::DeviceBackend::Vulkan
 	};
-	Na::Device device(device_info);
+	auto device = Na::Graphics::Device::Make(device_info);
 
 	Na::AssetManager asset_manager("assets/engine/", "bin/shaders/");
 
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 	auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json");
 
 	// sets anisotropy limit to the maximum supported by the GPU
-	renderer_settings->set_max_anisotropy(Na::Device::Limits::Anisotropy());
+	renderer_settings->set_max_anisotropy(device->limits()->max_anisotropy());
 
 	auto vs = asset_manager.load_shader(
 		"assets/shaders/basic_vertex.glsl",
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 
 End:
 	// IMPORTANT: wait for the gpu to finish all operations before deleting any resources
-	device.wait_all();
+	device->wait_all();
 
 	return 0;
 }
