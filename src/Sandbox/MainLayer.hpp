@@ -4,6 +4,8 @@
 #include <Natrium/Natrium.hpp>
 
 namespace Sandbox {
+	using namespace Na::Primitives;
+
 	class MainLayer : public Na::Layer {
 	public:
 		MainLayer(i64 priority = 0);
