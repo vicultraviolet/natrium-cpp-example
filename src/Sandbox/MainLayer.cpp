@@ -60,13 +60,13 @@ namespace Sandbox {
 			instanceBufferData.size(),
 			renderer_settings
 		);
-		vs->add_uniform(0, m_InstanceBuffer);
+		vs->bind_uniform(0, m_InstanceBuffer);
 		
 		m_Texture = Na::Graphics::Texture::Make(
 			{ img1, img2 },
 			renderer_settings
 		);
-		fs->add_uniform(1, m_Texture);
+		fs->bind_uniform(1, m_Texture);
 
 		m_Pipeline = Na::Graphics::Pipeline::Make(
 			renderer,
@@ -141,19 +141,24 @@ namespace Sandbox {
 
 	void MainLayer::update(double dt)
 	{
-		float amount = 5.0f * (float)dt;
-		glm::vec3 move(0.0f);
+		Na::Window& main_window = Na::Application::Get().window();
 
-		if (m_Input.key(Na::Keys::k_W))
-			move.z = amount;
-		if (m_Input.key(Na::Keys::k_S))
-			move.z = -amount;
-		if (m_Input.key(Na::Keys::k_D))
-			move.x = amount;
-		if (m_Input.key(Na::Keys::k_A))
-			move.x = -amount;
+		if (main_window.mouse_captured())
+		{
+			float amount = 5.0f * (float)dt;
+			glm::vec3 move(0.0f);
 
-		m_Camera.move(move);
+			if (m_Input.key(Na::Keys::k_W))
+				move.z = amount;
+			if (m_Input.key(Na::Keys::k_S))
+				move.z = -amount;
+			if (m_Input.key(Na::Keys::k_D))
+				move.x = amount;
+			if (m_Input.key(Na::Keys::k_A))
+				move.x = -amount;
+
+			m_Camera.move(move);
+		}
 	}
 
 	void MainLayer::draw(void)

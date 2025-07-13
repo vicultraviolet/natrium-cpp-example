@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 	auto ibo = Na::Graphics::IndexBuffer::Make((u32)k_Indices.size(), k_Indices.data());
 
 	auto texture = Na::Graphics::Texture::Make(img, renderer->settings());
-	fs->add_uniform(0, texture);
+	fs->bind_uniform(0, texture);
 
 	auto pipeline = Na::Graphics::Pipeline::Make(renderer, vertex_attributes, { vs, fs });
 
