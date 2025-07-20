@@ -1,5 +1,5 @@
 # Natrium Example
-![image](https://github.com/user-attachments/assets/b0612146-77cb-4c91-ae71-a9ad62a359d1)
+<img width="1312" height="890" alt="image" src="https://github.com/user-attachments/assets/458a2950-7017-45a3-9d1c-bd0d3179352a" />
 
 ## Introduction
 Simple example application of the [Natrium C++ framework](https://github.com/vicultraviolet/natrium-cpp/)
