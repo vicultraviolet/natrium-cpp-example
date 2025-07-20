@@ -24,12 +24,12 @@ namespace Sandbox {
 		auto renderer = Na::Application::Get().renderer();
 		Na::AssetManager& asset_manager = Na::Application::Get().asset_manager();
 
-		auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json"s);
+		auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json");
 
-		auto img1 = asset_manager.load_asset<Na::ImageAsset>("assets/texture.png"s);
-		auto img2 = asset_manager.load_asset<Na::ImageAsset>("assets/texture2.png"s);
+		auto img1 = asset_manager.load_asset<Na::ImageAsset>("assets/texture.png");
+		auto img2 = asset_manager.load_asset<Na::ImageAsset>("assets/texture2.png");
 
-		auto model = asset_manager.load_asset<Na::ModelAsset>("assets/model.obj"s);
+		auto model = asset_manager.load_asset<Na::ModelAsset>("assets/model.obj");
 
 		auto vs = asset_manager.load_shader(
 			"assets/shaders/sandbox_vertex.glsl",
@@ -56,23 +56,55 @@ namespace Sandbox {
 			model->indices().ptr()
 		);
 
-		m_InstanceBuffer = Na::Graphics::StorageBuffer::Make(
-			instanceBufferData.size(),
-			renderer_settings
-		);
-		vs->bind_uniform(0, m_InstanceBuffer);
-		
-		m_Texture = Na::Graphics::Texture::Make(
-			{ img1, img2 },
-			renderer_settings
-		);
-		fs->bind_uniform(1, m_Texture);
+		m_UniformSetLayouts.emplace(Na::Graphics::UniformSetLayout::Make({
+			Na::Graphics::UniformBinding{
+				.binding = 0,
+				.type = Na::Graphics::UniformType::StorageBuffer,
+				.shader_stage = Na::Graphics::ShaderStage::Vertex
+			}
+		}));
+
+		m_UniformSetLayouts.emplace(Na::Graphics::UniformSetLayout::Make({
+			Na::Graphics::UniformBinding{
+				.binding = 0,
+				.type = Na::Graphics::UniformType::Texture,
+				.shader_stage = Na::Graphics::ShaderStage::Fragment
+			}
+		}));
 
 		m_Pipeline = Na::Graphics::Pipeline::Make(
 			renderer,
 			Na::ModelAsset::VertexAttributes(),
+			{ m_UniformSetLayouts[0], m_UniformSetLayouts[1] },
 			{ vs, fs }
 		);
+
+		m_InstanceBuffer = Na::Graphics::StorageBuffer::Make(
+			instanceBufferData.size(),
+			renderer_settings
+		);
+
+		m_UniformSets.emplace(Na::Graphics::UniformSet::Make(
+			m_UniformSetLayouts[0],
+			renderer
+		));
+		m_UniformSets.back()->bind_at(0, m_InstanceBuffer);
+
+		m_Texture = Na::Graphics::Texture::Make(img1, renderer_settings);
+
+		m_UniformSets.emplace(Na::Graphics::UniformSet::Make(
+			m_UniformSetLayouts[1],
+			renderer
+		));
+		m_UniformSets.back()->bind_at(0, m_Texture);
+
+		m_Texture2 = Na::Graphics::Texture::Make(img2, renderer_settings);
+
+		m_UniformSets.emplace(Na::Graphics::UniformSet::Make(
+			m_UniformSetLayouts[1],
+			renderer
+		));
+		m_UniformSets.back()->bind_at(0, m_Texture2);
 	}
 
 	void MainLayer::on_event(Na::Event& e)
@@ -171,6 +203,14 @@ namespace Sandbox {
 
 		renderer->bind_pipeline(m_Pipeline);
 
+		renderer->bind_uniform_sets(
+			{
+				m_UniformSets[0],
+				m_UniformSets[1 + m_TextureIndex]
+			},
+			m_Pipeline
+		);
+
 		const Na::CameraMatrices& camera_matrices = m_Camera.matrices();
 		renderer->set_push_constant(
 			(u32)camera_matrices.size(),
@@ -211,6 +251,9 @@ namespace Sandbox {
 
 		ImGui::DragFloat3("Model 1 Position", glm::value_ptr(m_Instance1_Position), 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat3("Model 1 Scale", glm::value_ptr(m_Instance1_Scale), 0.01f, -10.0f, 10.0f);
+
+		ImGui::RadioButton("Texture 1", &m_TextureIndex, 0); ImGui::SameLine();
+		ImGui::RadioButton("Texture 2", &m_TextureIndex, 1);
 
 		ImGui::End();
 	}

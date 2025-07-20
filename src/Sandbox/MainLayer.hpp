@@ -22,12 +22,19 @@ namespace Sandbox {
 	private:
 		Na::Input m_Input;
 
+		Na::ArrayList<Na::UniqueRef<Na::Graphics::UniformSetLayout>> m_UniformSetLayouts;
 		Na::UniqueRef<Na::Graphics::Pipeline>      m_Pipeline;
 
 		Na::UniqueRef<Na::Graphics::VertexBuffer>  m_VertexBuffer;
 		Na::UniqueRef<Na::Graphics::IndexBuffer>   m_IndexBuffer;
+
 		Na::UniqueRef<Na::Graphics::StorageBuffer> m_InstanceBuffer;
 		Na::UniqueRef<Na::Graphics::Texture>       m_Texture;
+		Na::UniqueRef<Na::Graphics::Texture>       m_Texture2;
+
+		Na::ArrayList<Na::UniqueRef<Na::Graphics::UniformSet>> m_UniformSets;
+
+		i32 m_TextureIndex = 0;
 
 		Na::Camera3dData m_Camera;
 

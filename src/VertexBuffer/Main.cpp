@@ -1,4 +1,5 @@
 #include "Pch.hpp"
+#include <Natrium/Main.hpp>
 
 #include <Natrium/Core/Context.hpp>
 #include <Natrium/Core/Window.hpp>
@@ -7,6 +8,8 @@
 #include <Natrium/Graphics/Pipeline.hpp>
 
 #include <Natrium/Assets/AssetManager.hpp>
+
+using namespace Na::Primitives;
 
 constexpr glm::vec4 k_ClearColor{ 0.1f, 0.08f, 0.15f, 1.0f };
 
@@ -59,7 +62,7 @@ int main(int argc, char* argv[])
 
 	auto vbo = Na::Graphics::VertexBuffer::Make(k_Vertices.size() * sizeof(VertexData), k_Vertices.data());
 
-	auto pipeline = Na::Graphics::Pipeline::Make(renderer, vertex_attributes, { vs, fs });
+	auto pipeline = Na::Graphics::Pipeline::Make(renderer, vertex_attributes, {}, { vs, fs });
 
 	while (true)
 	{

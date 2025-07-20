@@ -1,6 +1,9 @@
 #include "Pch.hpp"
+#include <Natrium/Main.hpp>
 
 #include <Natrium/Template/Arena.hpp>
+
+using namespace Na::Primitives;
 
 static Na::Logger<> logger{ "Arena" };
 

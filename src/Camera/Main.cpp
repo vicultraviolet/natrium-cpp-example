@@ -1,4 +1,5 @@
 #include "Pch.hpp"
+#include <Natrium/Main.hpp>
 
 #include <Natrium/Core/Context.hpp>
 #include <Natrium/Core/Window.hpp>
@@ -11,6 +12,8 @@
 #include <Natrium/Assets/AssetManager.hpp>
 
 #include <Natrium/Math/Camera3dData.hpp>
+
+using namespace Na::Primitives;
 
 constexpr glm::vec4 k_ClearColor{ 0.1f, 0.08f, 0.15f, 1.0f };
 
@@ -68,7 +71,7 @@ int main(int argc, char* argv[])
 	Na::Camera3dData camera_data(glm::vec3(2.5f, 1.0f, 2.5f));
 	vs->set_push_constant_size((u32)camera_data.matrices().size());
 
-	auto pipeline = Na::Graphics::Pipeline::Make(renderer, vertex_attributes, { vs, fs });
+	auto pipeline = Na::Graphics::Pipeline::Make(renderer, vertex_attributes, {}, { vs, fs });
 
 	Na::DeltaTime dt;
 

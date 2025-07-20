@@ -1,4 +1,5 @@
 #include "Pch.hpp"
+#include <Natrium/Main.hpp>
 
 #include <Natrium/Core/Logger.hpp>
 

@@ -1,4 +1,5 @@
 #include "Pch.hpp"
+#include <Natrium/Main.hpp>
 
 #include <Natrium/Core/Context.hpp>
 #include <Natrium/Core/Window.hpp>

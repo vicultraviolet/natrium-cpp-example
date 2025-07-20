@@ -1,8 +1,11 @@
 #include "Pch.hpp"
+#include <Natrium/Main.hpp>
 
 #include <Natrium/Core/Context.hpp>
 #include <Natrium/Core/Window.hpp>
 #include <Natrium/Core/DeltaTime.hpp>
+
+using namespace Na::Primitives;
 
 int main(int argc, char* argv[])
 {

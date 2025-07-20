@@ -1,4 +1,5 @@
 #include "Pch.hpp"
+#include <Natrium/Main.hpp>
 
 #include <Natrium/Core/Context.hpp>
 #include <Natrium/Core/Window.hpp>
@@ -7,6 +8,8 @@
 #include <Natrium/Graphics/Pipeline.hpp>
 
 #include <Natrium/Assets/AssetManager.hpp>
+
+using namespace Na::Primitives;
 
 constexpr glm::vec4 k_ClearColor{ 0.1f, 0.08f, 0.15f, 1.0f };
 
@@ -69,13 +72,29 @@ int main(int argc, char* argv[])
 	auto vbo = Na::Graphics::VertexBuffer::Make(k_Vertices.size() * sizeof(VertexData), k_Vertices.data());
 	auto ibo = Na::Graphics::IndexBuffer::Make((u32)k_Indices.size(), k_Indices.data());
 
-	auto texture = Na::Graphics::Texture::Make(img, renderer->settings());
-	fs->bind_uniform(0, texture);
+	auto uniform_set_layout = Na::Graphics::UniformSetLayout::Make({
+		Na::Graphics::UniformBinding{
+			.binding = 0,
+			.type = Na::Graphics::UniformType::Texture,
+			.shader_stage = Na::Graphics::ShaderStage::Fragment
+		}
+	});
 
-	auto pipeline = Na::Graphics::Pipeline::Make(renderer, vertex_attributes, { vs, fs });
+	auto pipeline = Na::Graphics::Pipeline::Make(
+		renderer,
+		vertex_attributes,
+		{ uniform_set_layout },
+		{ vs, fs }
+	);
+
+	auto texture = Na::Graphics::Texture::Make(img, renderer->settings());
+	auto uniform_set = Na::Graphics::UniformSet::Make(uniform_set_layout, renderer);
+	uniform_set->bind_at(0, texture);
 
 	while (true)
 	{
+		std::this_thread::sleep_for(16ms);
+
 		for (Na::Event& e : Na::PollEvents())
 		{
 			switch (e.type)
@@ -95,6 +114,7 @@ int main(int argc, char* argv[])
 			continue;
 
 		renderer->bind_pipeline(pipeline);
+		renderer->bind_uniform_set(uniform_set, pipeline);
 		renderer->draw_indexed(vbo, ibo);
 
 		renderer->end_frame();
