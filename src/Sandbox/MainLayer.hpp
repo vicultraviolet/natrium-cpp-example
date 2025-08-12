@@ -23,7 +23,7 @@ namespace Sandbox {
 		Na::Input m_Input;
 
 		Na::ArrayList<Na::UniqueRef<Na::Graphics::UniformSetLayout>> m_UniformSetLayouts;
-		Na::UniqueRef<Na::Graphics::Pipeline>      m_Pipeline;
+		Na::UniqueRef<Na::Graphics::TrianglePipeline>      m_Pipeline;
 
 		Na::UniqueRef<Na::Graphics::VertexBuffer>  m_VertexBuffer;
 		Na::UniqueRef<Na::Graphics::IndexBuffer>   m_IndexBuffer;

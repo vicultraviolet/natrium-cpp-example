@@ -72,7 +72,7 @@ namespace Sandbox {
 			}
 		}));
 
-		m_Pipeline = Na::Graphics::Pipeline::Make(
+		m_Pipeline = Na::Graphics::TrianglePipeline::Make(
 			renderer,
 			Na::ModelAsset::VertexAttributes(),
 			{ m_UniformSetLayouts[0], m_UniformSetLayouts[1] },
