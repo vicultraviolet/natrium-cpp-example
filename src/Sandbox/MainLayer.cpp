@@ -24,22 +24,22 @@ namespace Sandbox {
 		auto renderer = Na::Application::Get().renderer();
 		Na::AssetManager& asset_manager = Na::Application::Get().asset_manager();
 
-		auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json");
+		auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json").value();
 
-		auto img1 = asset_manager.load_asset<Na::ImageAsset>("assets/texture.png");
-		auto img2 = asset_manager.load_asset<Na::ImageAsset>("assets/texture2.png");
+		auto img1 = asset_manager.load_asset<Na::ImageAsset>("assets/texture.png").value();
+		auto img2 = asset_manager.load_asset<Na::ImageAsset>("assets/texture2.png").value();
 
-		auto model = asset_manager.load_asset<Na::ModelAsset>("assets/model.obj");
+		auto model = asset_manager.load_asset<Na::ModelAsset>("assets/model.obj").value();
 
 		auto vs = asset_manager.load_shader(
 			"assets/shaders/sandbox_vertex.glsl",
 			Na::Graphics::ShaderStage::Vertex
-		);
+		).value();
 
 		auto fs = asset_manager.load_shader(
 			"assets/shaders/sandbox_fragment.glsl",
 			Na::Graphics::ShaderStage::Fragment
-		);
+		).value();
 
 		m_Camera.set_aspect_ratio(
 			(float)main_window.width() / (float)main_window.height()

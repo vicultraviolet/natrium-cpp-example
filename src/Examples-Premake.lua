@@ -1,6 +1,7 @@
 include "Logging/Logging-Premake.lua"
 include "Ref/Ref-Premake.lua"
 include "Arena/Arena-Premake.lua"
+include "Expected/Expected-Premake.lua"
 include "Window/Window-Premake.lua"
 include "Renderer/Renderer-Premake.lua"
 include "VertexBuffer/VertexBuffer-Premake.lua"
