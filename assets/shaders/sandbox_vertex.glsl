@@ -8,8 +8,8 @@ layout(push_constant) uniform pc {
     mat4 proj;
 };
 
-layout(set = 0, binding = 0) readonly buffer InstanceBuffer {
-    mat4 model[];
+layout(set = 0, binding = 0) uniform InstanceBuffer {
+    mat4 model[64];
 } u_InstanceBuffer;
 
 layout(location = 0) in vec3 a_Position;

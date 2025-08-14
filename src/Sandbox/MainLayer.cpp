@@ -46,20 +46,18 @@ namespace Sandbox {
 		);
 		vs->set_push_constant_size((u32)m_Camera.matrices().size());
 
-		m_VertexBuffer = Na::Graphics::VertexBuffer::Make(
-			model->vertex_data_size(),
-			model->vertices().ptr()
-		);
+		m_VertexBuffer = Na::Graphics::MakeVertexBuffer(model->vertex_data_size());
+		m_VertexBuffer->set_data(model->vertices().ptr());
 
-		m_IndexBuffer = Na::Graphics::IndexBuffer::Make(
-			model->index_count(),
-			model->indices().ptr()
-		);
+		m_IndexBuffer = Na::Graphics::MakeIndexBuffer(model->index_count());
+		m_IndexBuffer->set_data(model->indices().ptr());
+
+		m_IndexCount = model->index_count();
 
 		m_UniformSetLayouts.emplace(Na::Graphics::UniformSetLayout::Make({
 			Na::Graphics::UniformBinding{
 				.binding = 0,
-				.type = Na::Graphics::UniformType::StorageBuffer,
+				.type = Na::Graphics::UniformType::UniformMultibuffer,
 				.shader_stage = Na::Graphics::ShaderStage::Vertex
 			}
 		}));
@@ -79,16 +77,17 @@ namespace Sandbox {
 			{ vs, fs }
 		);
 
-		m_InstanceBuffer = Na::Graphics::StorageBuffer::Make(
+		m_InstanceBuffer = Na::Graphics::MakeUniformBuffer(
 			instanceBufferData.size(),
-			renderer_settings
+			renderer_settings->max_frames_in_flight()
 		);
+		m_InstanceBuffer->map();
 
 		m_UniformSets.emplace(Na::Graphics::UniformSet::Make(
 			m_UniformSetLayouts[0],
 			renderer
 		));
-		m_UniformSets.back()->bind_at(0, m_InstanceBuffer);
+		m_UniformSets.back()->bind_at(0, m_InstanceBuffer, Na::Graphics::BufferTypeFlags::UniformBuffer);
 
 		m_Texture = Na::Graphics::Texture::Make(img1, renderer_settings);
 
@@ -232,8 +231,9 @@ namespace Sandbox {
 		model1 = glm::rotate(model1, time * glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model1 = glm::scale(model1, m_Instance1_Scale);
 
-		renderer->set_descriptor_buffer(m_InstanceBuffer, &instanceBufferData);
-		renderer->draw_indexed(m_VertexBuffer, m_IndexBuffer, instanceBufferData.count());
+		m_InstanceBuffer->set_subdata(&instanceBufferData, renderer->current_frame_index());
+
+		renderer->draw_indexed(m_VertexBuffer, m_IndexBuffer, m_IndexCount, instanceBufferData.count());
 	}
 
 	void MainLayer::imgui_draw(void)

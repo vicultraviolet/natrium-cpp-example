@@ -25,12 +25,13 @@ namespace Sandbox {
 		Na::ArrayList<Na::UniqueRef<Na::Graphics::UniformSetLayout>> m_UniformSetLayouts;
 		Na::UniqueRef<Na::Graphics::TrianglePipeline>      m_Pipeline;
 
-		Na::UniqueRef<Na::Graphics::VertexBuffer>  m_VertexBuffer;
-		Na::UniqueRef<Na::Graphics::IndexBuffer>   m_IndexBuffer;
+		Na::UniqueRef<Na::Graphics::Buffer> m_VertexBuffer;
+		Na::UniqueRef<Na::Graphics::Buffer> m_IndexBuffer;
+		u32 m_IndexCount = 0;
 
-		Na::UniqueRef<Na::Graphics::StorageBuffer> m_InstanceBuffer;
-		Na::UniqueRef<Na::Graphics::Texture>       m_Texture;
-		Na::UniqueRef<Na::Graphics::Texture>       m_Texture2;
+		Na::UniqueRef<Na::Graphics::Buffer>  m_InstanceBuffer;
+		Na::UniqueRef<Na::Graphics::Texture> m_Texture;
+		Na::UniqueRef<Na::Graphics::Texture> m_Texture2;
 
 		Na::ArrayList<Na::UniqueRef<Na::Graphics::UniformSet>> m_UniformSets;
 
