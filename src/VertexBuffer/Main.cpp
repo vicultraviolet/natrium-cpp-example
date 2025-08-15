@@ -5,7 +5,7 @@
 #include <Natrium/Core/Window.hpp>
 
 #include <Natrium/Graphics/Renderer.hpp>
-#include <Natrium/Graphics/Pipeline.hpp>
+#include <Natrium/Graphics/Pipelines.hpp>
 
 #include <Natrium/Assets/AssetManager.hpp>
 
@@ -36,21 +36,21 @@ int main(int argc, char* argv[])
 
 	Na::AssetManager asset_manager("assets/engine/", "bin/shaders/");
 
-	// if file is not found, it will be created with default settings
-	auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json");
-
-	// sets anisotropy limit to the maximum supported by the GPU
-	renderer_settings->set_max_anisotropy(device->limits()->max_anisotropy());
-
 	auto vs = asset_manager.load_shader(
 		"assets/shaders/basic_vertex.glsl",
 		Na::Graphics::ShaderStage::Vertex
-	);
+	).value();
 
 	auto fs = asset_manager.load_shader(
 		"assets/shaders/basic_fragment.glsl",
 		Na::Graphics::ShaderStage::Fragment
-	);
+	).value();
+
+	// if file is not found, it will be created with default settings
+	auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json").value();
+
+	// sets anisotropy limit to the maximum supported by the GPU
+	renderer_settings->set_max_anisotropy(device->limits()->max_anisotropy());
 
 	Na::Window window(1280, 720, "Vertex Buffer Example");
 	auto renderer = Na::Graphics::Renderer::Make(window, renderer_settings);
@@ -60,9 +60,10 @@ int main(int argc, char* argv[])
 	vertex_attributes.add(0, Na::Graphics::VertexAttributeType::Vec3);
 	vertex_attributes.add(1, Na::Graphics::VertexAttributeType::Vec3);
 
-	auto vbo = Na::Graphics::VertexBuffer::Make(k_Vertices.size() * sizeof(VertexData), k_Vertices.data());
+	auto vbo = Na::Graphics::MakeVertexBuffer(k_Vertices.size() * sizeof(VertexData));
+	vbo->set_data(k_Vertices.data());
 
-	auto pipeline = Na::Graphics::Pipeline::Make(renderer, vertex_attributes, {}, { vs, fs });
+	auto pipeline = Na::Graphics::TrianglePipeline::Make(renderer, vertex_attributes, {}, { vs, fs });
 
 	while (true)
 	{

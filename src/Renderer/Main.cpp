@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 	Na::AssetManager asset_manager("assets/engine/", "bin/shaders/");
 
 	// if file is not found, it will be created with default settings
-	auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json");
+	auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json").value();
 
 	// sets anisotropy limit to the maximum supported by the GPU
 	renderer_settings->set_max_anisotropy(device->limits()->max_anisotropy());
@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 		if (window.minimized())
 			continue;
 
-		// if returns false, it means you should continue rendering (e.g. window was resized)
+		// if returns false, it means you shouldn't continue rendering (e.g. window was resized)
 		if (!renderer->begin_frame(k_ClearColor))
 			continue;
 
