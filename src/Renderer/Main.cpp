@@ -29,8 +29,12 @@ int main(int argc, char* argv[])
 	// sets anisotropy limit to the maximum supported by the GPU
 	renderer_settings->set_max_anisotropy(device->limits()->max_anisotropy());
 
-	Na::Window window(1280, 720, "Renderer Example");
-	auto renderer = Na::Graphics::Renderer::Make(window, renderer_settings);
+	auto renderer = Na::Graphics::Renderer::Make(renderer_settings);
+
+	auto window = Na::Ref<Na::Window>::Make(1280, 720, "Renderer Example");
+
+	auto render_target = Na::Graphics::SwapchainRenderTarget::Make(window, renderer_settings);
+	renderer->bind_render_target(render_target);
 
 	while (true)
 	{
@@ -47,14 +51,22 @@ int main(int argc, char* argv[])
 		}
 
 		// will crash if the window is minimized, so you should always check before rendering
-		if (window.minimized())
+		if (window->minimized())
 			continue;
 
 		// if returns false, it means you shouldn't continue rendering (e.g. window was resized)
-		if (!renderer->begin_frame(k_ClearColor))
+		if (!render_target->acquire_next_image())
 			continue;
 
+		renderer->begin_frame();
+		renderer->begin_render_pass(k_ClearColor);
+
+		// here you would typically bind your pipeline and draw your objects
+
+		renderer->end_render_pass();
 		renderer->end_frame();
+
+		render_target->present();
 	}
 
 End:

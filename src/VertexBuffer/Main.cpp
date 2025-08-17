@@ -52,18 +52,22 @@ int main(int argc, char* argv[])
 	// sets anisotropy limit to the maximum supported by the GPU
 	renderer_settings->set_max_anisotropy(device->limits()->max_anisotropy());
 
-	Na::Window window(1280, 720, "Vertex Buffer Example");
-	auto renderer = Na::Graphics::Renderer::Make(window, renderer_settings);
+	auto renderer = Na::Graphics::Renderer::Make(renderer_settings);
+
+	auto window = Na::Ref<Na::Window>::Make(1280, 720, "Vertex Buffer Example");
+
+	auto render_target = Na::Graphics::SwapchainRenderTarget::Make(window, renderer_settings);
+	renderer->bind_render_target(render_target);
 
 	Na::Graphics::VertexAttributes vertex_attributes(2);
 
-	vertex_attributes.add(0, Na::Graphics::VertexAttributeType::Vec3);
-	vertex_attributes.add(1, Na::Graphics::VertexAttributeType::Vec3);
+	vertex_attributes.add(0, Na::Graphics::VertexAttributeType::Vec3); // position
+	vertex_attributes.add(1, Na::Graphics::VertexAttributeType::Vec3); // color
 
 	auto vbo = Na::Graphics::MakeVertexBuffer(k_Vertices.size() * sizeof(VertexData));
 	vbo->set_data(k_Vertices.data());
 
-	auto pipeline = Na::Graphics::TrianglePipeline::Make(renderer, vertex_attributes, {}, { vs, fs });
+	auto pipeline = Na::Graphics::TrianglePipeline::Make(render_target, vertex_attributes, {}, { vs, fs });
 
 	while (true)
 	{
@@ -80,17 +84,24 @@ int main(int argc, char* argv[])
 		}
 
 		// will crash if the window is minimized, so you should always check before rendering
-		if (window.minimized())
+		if (window->minimized())
 			continue;
 
-		// if returns false, it means you should continue rendering (e.g. window was resized)
-		if (!renderer->begin_frame(k_ClearColor))
+		// if returns false, it means you shouldn't continue rendering (e.g. window was resized)
+		if (!render_target->acquire_next_image())
 			continue;
-		
+
+		renderer->begin_frame();
+		renderer->begin_render_pass(k_ClearColor);
+
 		renderer->bind_pipeline(pipeline);
+
 		renderer->draw_vertices(vbo, (u32)k_Vertices.size());
 
+		renderer->end_render_pass();
 		renderer->end_frame();
+
+		render_target->present();
 	}
 
 End:

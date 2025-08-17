@@ -18,10 +18,11 @@ namespace Sandbox {
 
 	MainLayer::MainLayer(i64 priority)
 	: Na::Layer(priority),
-	m_Camera(glm::vec3(2.5f, 1.0f, 2.5f))
+	  m_Camera(glm::vec3(2.5f, 1.0f, 2.5f)),
+	  m_MainWindow(Na::Application::Get().window()),
+	  m_Renderer(Na::Application::Get().renderer()),
+	  m_RenderTarget(Na::Application::Get().render_target())
 	{
-		Na::Window& main_window = Na::Application::Get().window();
-		auto renderer = Na::Application::Get().renderer();
 		Na::AssetManager& asset_manager = Na::Application::Get().asset_manager();
 
 		auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json").value();
@@ -42,7 +43,7 @@ namespace Sandbox {
 		).value();
 
 		m_Camera.set_aspect_ratio(
-			(float)main_window.width() / (float)main_window.height()
+			(float)m_MainWindow->width() / (float)m_MainWindow->height()
 		);
 		vs->set_push_constant_size((u32)m_Camera.matrices().size());
 
@@ -71,7 +72,7 @@ namespace Sandbox {
 		}));
 
 		m_Pipeline = Na::Graphics::TrianglePipeline::Make(
-			renderer,
+			m_RenderTarget,
 			Na::ModelAsset::VertexAttributes(),
 			{ m_UniformSetLayouts[0], m_UniformSetLayouts[1] },
 			{ vs, fs }
@@ -85,7 +86,7 @@ namespace Sandbox {
 
 		m_UniformSets.emplace(Na::Graphics::UniformSet::Make(
 			m_UniformSetLayouts[0],
-			renderer
+			m_Renderer
 		));
 		m_UniformSets.back()->bind_at(0, m_InstanceBuffer, Na::Graphics::BufferTypeFlags::UniformBuffer);
 
@@ -93,7 +94,7 @@ namespace Sandbox {
 
 		m_UniformSets.emplace(Na::Graphics::UniformSet::Make(
 			m_UniformSetLayouts[1],
-			renderer
+			m_Renderer
 		));
 		m_UniformSets.back()->bind_at(0, m_Texture);
 
@@ -101,7 +102,7 @@ namespace Sandbox {
 
 		m_UniformSets.emplace(Na::Graphics::UniformSet::Make(
 			m_UniformSetLayouts[1],
-			renderer
+			m_Renderer
 		));
 		m_UniformSets.back()->bind_at(0, m_Texture2);
 	}
@@ -131,11 +132,9 @@ namespace Sandbox {
 
 	void MainLayer::_on_mouse_button_press(Na::Event_MouseButtonPressed& e)
 	{
-		Na::Window& main_window = Na::Application::Get().window();
-
 		if (e.button == Na::MouseButtons::k_Left)
 		{
-			main_window.capture_mouse();
+			m_MainWindow->capture_mouse();
 
 			if (auto imgui_layer = Na::Application::Get().imgui_layer().lock())
 				imgui_layer->set_enabled(false);
@@ -146,12 +145,10 @@ namespace Sandbox {
 
 	void MainLayer::_on_key_press(Na::Event_KeyPressed& e)
 	{
-		Na::Window& main_window = Na::Application::Get().window();
-
 		switch (e.key)
 		{
 		case Na::Keys::k_Escape:
-			main_window.release_mouse();
+			m_MainWindow->release_mouse();
 
 			m_Camera.on_mouse_release();
 
@@ -164,17 +161,13 @@ namespace Sandbox {
 
 	void MainLayer::_on_mouse_move(Na::Event_MouseMoved& e)
 	{
-		Na::Window& main_window = Na::Application::Get().window();
-
-		if (main_window.mouse_captured())
+		if (m_MainWindow->mouse_captured())
 			m_Camera.rotate_with_mouse(glm::vec2(e.x, e.y));
 	}
 
 	void MainLayer::update(double dt)
 	{
-		Na::Window& main_window = Na::Application::Get().window();
-
-		if (main_window.mouse_captured())
+		if (m_MainWindow->mouse_captured())
 		{
 			float amount = 5.0f * (float)dt;
 			glm::vec3 move(0.0f);
@@ -194,15 +187,12 @@ namespace Sandbox {
 
 	void MainLayer::draw(void)
 	{
-		Na::Window& main_window = Na::Application::Get().window();
-		auto renderer = Na::Application::Get().renderer();
-
 		static auto x_StartTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::high_resolution_clock::now() - x_StartTime).count();
 
-		renderer->bind_pipeline(m_Pipeline);
+		m_Renderer->bind_pipeline(m_Pipeline);
 
-		renderer->bind_uniform_sets(
+		m_Renderer->bind_uniform_sets(
 			{
 				m_UniformSets[0],
 				m_UniformSets[1 + m_TextureIndex]
@@ -211,7 +201,7 @@ namespace Sandbox {
 		);
 
 		const Na::CameraMatrices& camera_matrices = m_Camera.matrices();
-		renderer->set_push_constant(
+		m_Renderer->set_push_constant(
 			(u32)camera_matrices.size(),
 			Na::Graphics::ShaderStage::Vertex,
 			0,
@@ -231,9 +221,9 @@ namespace Sandbox {
 		model1 = glm::rotate(model1, time * glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model1 = glm::scale(model1, m_Instance1_Scale);
 
-		m_InstanceBuffer->set_subdata(&instanceBufferData, renderer->current_frame_index());
+		m_InstanceBuffer->set_subdata(&instanceBufferData, m_Renderer->current_frame_index());
 
-		renderer->draw_indexed(m_VertexBuffer, m_IndexBuffer, m_IndexCount, instanceBufferData.count());
+		m_Renderer->draw_indexed(m_VertexBuffer, m_IndexBuffer, m_IndexCount, instanceBufferData.count());
 	}
 
 	void MainLayer::imgui_draw(void)

@@ -22,6 +22,10 @@ namespace Sandbox {
 	private:
 		Na::Input m_Input;
 
+		Na::Ref<Na::Window> m_MainWindow;
+		Na::Ref<Na::Graphics::Renderer> m_Renderer;
+		Na::Ref<Na::Graphics::SwapchainRenderTarget> m_RenderTarget;
+
 		Na::ArrayList<Na::UniqueRef<Na::Graphics::UniformSetLayout>> m_UniformSetLayouts;
 		Na::UniqueRef<Na::Graphics::TrianglePipeline>      m_Pipeline;
 
