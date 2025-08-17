@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 
 	auto renderer = Na::Graphics::Renderer::Make(renderer_settings);
 
-	auto window = Na::Ref<Na::Window>::Make(1280, 720, "IndexBuffer Example");
+	auto window = Na::MakeRef<Na::Window>(1280, 720, "IndexBuffer Example");
 
 	auto render_target = Na::Graphics::SwapchainRenderTarget::Make(window, renderer_settings);
 	renderer->bind_render_target(render_target);

@@ -27,7 +27,7 @@ struct Dummy {
 int main(int argc, char* argv[])
 {
 	{
-		auto unique = Na::UniqueRef<Dummy>::Make("Unique");
+		auto unique = Na::MakeUnique<Dummy>("Unique");
 	}
 
 	Na::WeakRef<Dummy> weak;
@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 		Na::Ref<Dummy> ref;
 
 		{
-			auto ref2 = Na::Ref<Dummy>::Make("Shared");
+			auto ref2 = Na::MakeShared<Dummy>("Shared");
 
 			ref = ref2;
 		}
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 
 	Na::ViewRef<Dummy> view;
 	{
-		Na::Ref<Dummy> ref = Na::UniqueRef<Dummy>::Make("Shared from Unique");
+		Na::Ref<Dummy> ref = Na::MakeUnique<Dummy>("Shared from Unique");
 
 		view = ref;
 
