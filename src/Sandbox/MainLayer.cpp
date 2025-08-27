@@ -55,27 +55,26 @@ namespace Sandbox {
 
 		m_IndexCount = model->index_count();
 
-		m_UniformSetLayouts.emplace(Na::Graphics::UniformSetLayout::Make({
-			Na::Graphics::UniformBinding{
-				.binding = 0,
-				.type = Na::Graphics::UniformType::UniformMultibuffer,
-				.shader_stage = Na::Graphics::ShaderStage::Vertex
+		m_UniformManager.init_layout(
+			Na::HL::UniformSetIndices::k_Global, // set 0
+			{
+				Na::Graphics::UniformBinding{
+					.binding = 0,
+					.type = Na::Graphics::UniformType::UniformMultibuffer,
+					.shader_stage = Na::Graphics::ShaderStage::Vertex
+				}
 			}
-		}));
+		);
 
-		m_UniformSetLayouts.emplace(Na::Graphics::UniformSetLayout::Make({
-			Na::Graphics::UniformBinding{
-				.binding = 0,
-				.type = Na::Graphics::UniformType::Texture,
-				.shader_stage = Na::Graphics::ShaderStage::Fragment
+		m_UniformManager.init_layout(
+			Na::HL::UniformSetIndices::k_Material, // set 1
+			{
+				Na::Graphics::UniformBinding{
+					.binding = 0,
+					.type = Na::Graphics::UniformType::Texture,
+					.shader_stage = Na::Graphics::ShaderStage::Fragment
+				}
 			}
-		}));
-
-		m_Pipeline = Na::Graphics::TrianglePipeline::Make(
-			m_RenderTarget,
-			Na::ModelAsset::VertexAttributes(),
-			{ m_UniformSetLayouts[0], m_UniformSetLayouts[1] },
-			{ vs, fs }
 		);
 
 		m_InstanceBuffer = Na::Graphics::MakeUniformBuffer(
@@ -84,27 +83,35 @@ namespace Sandbox {
 		);
 		m_InstanceBuffer->map();
 
-		m_UniformSets.emplace(Na::Graphics::UniformSet::Make(
-			m_UniformSetLayouts[0],
-			m_Renderer
-		));
-		m_UniformSets.back()->bind_at(0, m_InstanceBuffer, Na::Graphics::BufferTypeFlags::UniformBuffer);
-
 		m_Texture = Na::Graphics::Texture::Make(img1, renderer_settings);
-
-		m_UniformSets.emplace(Na::Graphics::UniformSet::Make(
-			m_UniformSetLayouts[1],
-			m_Renderer
-		));
-		m_UniformSets.back()->bind_at(0, m_Texture);
-
 		m_Texture2 = Na::Graphics::Texture::Make(img2, renderer_settings);
 
-		m_UniformSets.emplace(Na::Graphics::UniformSet::Make(
-			m_UniformSetLayouts[1],
+		m_UniformManager.create_set(
+			Na::HL::UniformSetIndices::k_Global, // set 0
 			m_Renderer
-		));
-		m_UniformSets.back()->bind_at(0, m_Texture2);
+		);
+		m_UniformManager.set(0)->bind_at(0, m_InstanceBuffer, Na::Graphics::BufferTypeFlags::UniformBuffer);
+
+		m_UniformManager.create_set(
+			Na::HL::UniformSetIndices::k_Material, // set 1
+			m_Renderer
+		);
+		m_UniformManager.set(1)->bind_at(0, m_Texture);
+
+		m_UniformManager.create_set(
+			Na::HL::UniformSetIndices::k_Material, // set 1
+			m_Renderer
+		);
+		m_UniformManager.set(2)->bind_at(0, m_Texture2);
+
+		Na::HL::TrianglePipelineCreateInfo pipeline_info
+		{
+			.render_target = m_RenderTarget,
+			.shaders = { vs, fs },
+			.vertex_attributes = &Na::ModelAsset::VertexAttributes(),
+			.uniform_set_layouts = &m_UniformManager.set_layouts()
+		};
+		m_Pipeline = Na::HL::Pipeline(pipeline_info);
 	}
 
 	void MainLayer::on_event(Na::Event& e)
@@ -190,14 +197,14 @@ namespace Sandbox {
 		static auto x_StartTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(std::chrono::high_resolution_clock::now() - x_StartTime).count();
 
-		m_Renderer->bind_pipeline(m_Pipeline);
+		m_Renderer->bind_pipeline(m_Pipeline.native());
 
 		m_Renderer->bind_uniform_sets(
 			{
-				m_UniformSets[0],
-				m_UniformSets[1 + m_TextureIndex]
+				m_UniformManager.set(0),
+				m_UniformManager.set(1 + m_TextureIndex)
 			},
-			m_Pipeline
+			m_Pipeline.native()
 		);
 
 		const Na::CameraMatrices& camera_matrices = m_Camera.matrices();
@@ -206,7 +213,7 @@ namespace Sandbox {
 			Na::Graphics::ShaderStage::Vertex,
 			0,
 			&camera_matrices,
-			m_Pipeline
+			m_Pipeline.native()
 		);
 
 		glm::mat4& model0 = instanceBufferData.instance_data[0].model;
@@ -223,7 +230,9 @@ namespace Sandbox {
 
 		m_InstanceBuffer->set_subdata(&instanceBufferData, m_Renderer->current_frame_index());
 
-		m_Renderer->draw_indexed(m_VertexBuffer, m_IndexBuffer, m_IndexCount, instanceBufferData.count());
+		m_Renderer->bind_vertex_buffer(m_VertexBuffer);
+		m_Renderer->bind_index_buffer(m_IndexBuffer);
+		m_Renderer->draw_indexed(m_IndexCount, instanceBufferData.count());
 	}
 
 	void MainLayer::imgui_draw(void)

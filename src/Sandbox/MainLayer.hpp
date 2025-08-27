@@ -26,8 +26,8 @@ namespace Sandbox {
 		Na::Ref<Na::Graphics::Renderer> m_Renderer;
 		Na::Ref<Na::Graphics::SwapchainRenderTarget> m_RenderTarget;
 
-		Na::ArrayList<Na::UniqueRef<Na::Graphics::UniformSetLayout>> m_UniformSetLayouts;
-		Na::UniqueRef<Na::Graphics::TrianglePipeline>      m_Pipeline;
+		Na::HL::UniformManager m_UniformManager;
+		Na::HL::Pipeline m_Pipeline;
 
 		Na::UniqueRef<Na::Graphics::Buffer> m_VertexBuffer;
 		Na::UniqueRef<Na::Graphics::Buffer> m_IndexBuffer;
@@ -36,8 +36,6 @@ namespace Sandbox {
 		Na::UniqueRef<Na::Graphics::Buffer>  m_InstanceBuffer;
 		Na::UniqueRef<Na::Graphics::Texture> m_Texture;
 		Na::UniqueRef<Na::Graphics::Texture> m_Texture2;
-
-		Na::ArrayList<Na::UniqueRef<Na::Graphics::UniformSet>> m_UniformSets;
 
 		i32 m_TextureIndex = 0;
 
