@@ -125,9 +125,14 @@ namespace Sandbox {
 			m_Renderer
 		);
 
+		Na::View<const Na::Graphics::Texture> textures[2] = { m_Texture, m_Texture2 };
+
 		Na::Graphics::UniformSetTextureBindingInfo2 texture_binding_info;
+
 		texture_binding_info.binding = 0;
-		texture_binding_info.set_textures({ m_Texture, m_Texture2 });
+
+		texture_binding_info.textures = textures;
+		texture_binding_info.texture_count = 2;
 
 		m_UniformManager.set(1)->bind_array(texture_binding_info);
 
@@ -139,6 +144,8 @@ namespace Sandbox {
 			.uniform_set_layouts = &m_UniformManager.set_layouts()
 		};
 		m_Pipeline = Na::HL::Pipeline(pipeline_info);
+
+		g_Logger.print(Na::LogLevel::Trace, "MainLayer initialized!");
 	}
 
 	void MainLayer::on_event(Na::Event& e)

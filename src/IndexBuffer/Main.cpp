@@ -102,7 +102,10 @@ int main(int argc, char* argv[])
 
 		renderer->bind_pipeline(pipeline);
 
-		renderer->draw_indexed(vbo, ibo, (u32)k_Indices.size());
+		renderer->bind_vertex_buffer(vbo);
+		renderer->bind_index_buffer(ibo);
+
+		renderer->draw_indexed(k_Indices.size());
 
 		renderer->end_render_pass();
 		renderer->end_frame();

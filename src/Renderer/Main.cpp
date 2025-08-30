@@ -17,7 +17,10 @@ int main(int argc, char* argv[])
 
 	Na::Graphics::DeviceInitInfo device_info
 	{
-		.backend = Na::Graphics::DeviceBackend::Vulkan
+		.backend = Na::Graphics::DeviceBackend::Vulkan,
+		.required_extensions = {
+			Na::Graphics::DeviceExtension::Swapchain
+		}
 	};
 	auto device = Na::Graphics::Device::Make(device_info);
 

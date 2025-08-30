@@ -34,7 +34,10 @@ int main(int argc, char* argv[])
 
 	Na::Graphics::DeviceInitInfo device_info
 	{
-		.backend = Na::Graphics::DeviceBackend::Vulkan
+		.backend = Na::Graphics::DeviceBackend::Vulkan,
+		.required_extensions = {
+			Na::Graphics::DeviceExtension::Swapchain
+		}
 	};
 	auto device = Na::Graphics::Device::Make(device_info);
 
@@ -163,8 +166,9 @@ int main(int argc, char* argv[])
 			&camera_matrices,
 			pipeline
 		);
-
-		renderer->draw_vertices(vbo, (u32)k_Vertices.size());
+		
+		renderer->bind_vertex_buffer(vbo);
+		renderer->draw_vertices((u32)k_Vertices.size());
 
 		renderer->end_render_pass();
 		renderer->end_frame();

@@ -48,6 +48,8 @@ namespace Sandbox {
 		glm::vec3 m_Instance1_Position{ 1.0f,  0.5f,  0.7f };
 		glm::vec3 m_Instance1_Scale{ 0.5f,  0.5f,  0.5f };
 	};
+
+	inline Na::Logger g_Logger{ "Sandbox" };
 } // namespace Sandbox
 
 #endif // EXAMPLE_APP_MAIN_LAYER_HPP

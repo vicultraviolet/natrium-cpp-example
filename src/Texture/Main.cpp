@@ -4,8 +4,9 @@
 #include <Natrium/Core/Context.hpp>
 #include <Natrium/Core/Window.hpp>
 
-#include <Natrium/Graphics/Renderer.hpp>
-#include <Natrium/Graphics/Pipelines.hpp>
+#include <Natrium/HL/Renderer_HL.hpp>
+#include <Natrium/HL/UniformManager_HL.hpp>
+#include <Natrium/HL/Pipeline_HL.hpp>
 
 #include <Natrium/Assets/AssetManager.hpp>
 
@@ -37,7 +38,10 @@ int main(int argc, char* argv[])
 
 	Na::Graphics::DeviceInitInfo device_info
 	{
-		.backend = Na::Graphics::DeviceBackend::Vulkan
+		.backend = Na::Graphics::DeviceBackend::Vulkan,
+		.required_extensions = {
+			Na::Graphics::DeviceExtension::Swapchain
+		}
 	};
 	auto device = Na::Graphics::Device::Make(device_info);
 
@@ -65,8 +69,8 @@ int main(int argc, char* argv[])
 
 	auto window = Na::MakeRef<Na::Window>(1280, 720, "Texture Example");
 
-	auto render_target = Na::Graphics::SwapchainRenderTarget::Make(window, renderer_settings);
-	renderer->bind_render_target(render_target);
+	auto display = Na::HL::Display::Make(window, renderer_settings);
+	renderer->bind_render_target(display);
 
 	Na::Graphics::VertexAttributes vertex_attributes(2);
 
@@ -79,24 +83,41 @@ int main(int argc, char* argv[])
 	auto ibo = Na::Graphics::MakeIndexBuffer((u32)k_Indices.size());
 	ibo->set_data(k_Indices.data());
 
-	auto uniform_set_layout = Na::Graphics::UniformSetLayout::Make({
-		Na::Graphics::UniformBinding{
-			.binding = 0,
-			.type = Na::Graphics::UniformType::Texture,
-			.shader_stage = Na::Graphics::ShaderStage::Fragment
-		}
-	});
+	Na::HL::UniformManager uniform_manager;
 
-	auto pipeline = Na::Graphics::TrianglePipeline::Make(
-		render_target,
-		vertex_attributes,
-		{ uniform_set_layout },
-		{ vs, fs }
+	uniform_manager.init_layout(
+		0, // layout index
+		{ // bindings
+			Na::Graphics::UniformBinding{
+				.binding = 0,
+				.type = Na::Graphics::UniformType::Texture,
+				.shader_stage = Na::Graphics::ShaderStage::Fragment
+			}
+		}
 	);
 
 	auto texture = Na::Graphics::Texture::Make(img, renderer->settings());
-	auto uniform_set = Na::Graphics::UniformSet::Make(uniform_set_layout, renderer);
-	uniform_set->bind_at(0, texture);
+
+	uniform_manager.create_set(
+		0, // layout index
+		renderer
+	);
+
+	Na::Graphics::UniformSetTextureBindingInfo texture_binding_info;
+
+	texture_binding_info.binding = 0;
+	texture_binding_info.texture = texture;
+
+	uniform_manager.set(0)->bind(texture_binding_info);
+
+	Na::HL::TrianglePipelineCreateInfo pipeline_info
+	{
+		.render_target = display,
+		.shaders = { vs, fs },
+		.vertex_attributes = &vertex_attributes,
+		.uniform_set_layouts = &uniform_manager.set_layouts()
+	};
+	Na::HL::Pipeline pipeline(pipeline_info);
 
 	while (true)
 	{
@@ -117,21 +138,24 @@ int main(int argc, char* argv[])
 			continue;
 
 		// if returns false, it means you shouldn't continue rendering (e.g. window was resized)
-		if (!render_target->acquire_next_image())
+		if (!display->acquire_next_image())
 			continue;
 
 		renderer->begin_frame();
 		renderer->begin_render_pass(k_ClearColor);
 
-		renderer->bind_pipeline(pipeline);
-		renderer->bind_uniform_set(uniform_set, pipeline);
+		renderer->bind_pipeline(pipeline.native());
+		renderer->bind_uniform_set(uniform_manager.set(0), pipeline.native());
 
-		renderer->draw_indexed(vbo, ibo, (u32)k_Indices.size());
+		renderer->bind_vertex_buffer(vbo);
+		renderer->bind_index_buffer(ibo);
+
+		renderer->draw_indexed((u32)k_Indices.size());
 
 		renderer->end_render_pass();
 		renderer->end_frame();
 
-		render_target->present();
+		display->present();
 	}
 
 End:
