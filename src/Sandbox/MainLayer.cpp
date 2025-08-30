@@ -62,6 +62,11 @@ namespace Sandbox {
 					.binding = 0,
 					.type = Na::Graphics::UniformType::UniformMultibuffer,
 					.shader_stage = Na::Graphics::ShaderStage::Vertex
+				},
+				Na::Graphics::UniformBinding{
+					.binding = 1,
+					.type = Na::Graphics::UniformType::UniformMultibuffer,
+					.shader_stage = Na::Graphics::ShaderStage::Fragment
 				}
 			}
 		);
@@ -72,10 +77,20 @@ namespace Sandbox {
 				Na::Graphics::UniformBinding{
 					.binding = 0,
 					.type = Na::Graphics::UniformType::Texture,
-					.shader_stage = Na::Graphics::ShaderStage::Fragment
+					.shader_stage = Na::Graphics::ShaderStage::Fragment,
+
+					.count = 2,
+					.partially_bound = false,
+					.dynamic_count = false
 				}
 			}
 		);
+
+		m_UniformBuffer = Na::Graphics::MakeUniformBuffer(
+			sizeof(i32),
+			renderer_settings->max_frames_in_flight()
+		);
+		m_UniformBuffer->map();
 
 		m_InstanceBuffer = Na::Graphics::MakeUniformBuffer(
 			instanceBufferData.size(),
@@ -90,19 +105,31 @@ namespace Sandbox {
 			Na::HL::UniformSetIndices::k_Global, // set 0
 			m_Renderer
 		);
-		m_UniformManager.set(0)->bind_at(0, m_InstanceBuffer, Na::Graphics::BufferTypeFlags::UniformBuffer);
+
+		Na::Graphics::UniformSetBufferBindingInfo buffer_binding_info;
+
+		buffer_binding_info.type = Na::Graphics::BufferTypeFlags::UniformBuffer;
+
+		buffer_binding_info.binding = 0;
+		buffer_binding_info.buffer = m_InstanceBuffer;
+
+		m_UniformManager.set(0)->bind(buffer_binding_info);
+
+		buffer_binding_info.binding = 1;
+		buffer_binding_info.buffer = m_UniformBuffer;
+
+		m_UniformManager.set(0)->bind(buffer_binding_info);
 
 		m_UniformManager.create_set(
 			Na::HL::UniformSetIndices::k_Material, // set 1
 			m_Renderer
 		);
-		m_UniformManager.set(1)->bind_at(0, m_Texture);
 
-		m_UniformManager.create_set(
-			Na::HL::UniformSetIndices::k_Material, // set 1
-			m_Renderer
-		);
-		m_UniformManager.set(2)->bind_at(0, m_Texture2);
+		Na::Graphics::UniformSetTextureBindingInfo2 texture_binding_info;
+		texture_binding_info.binding = 0;
+		texture_binding_info.set_textures({ m_Texture, m_Texture2 });
+
+		m_UniformManager.set(1)->bind_array(texture_binding_info);
 
 		Na::HL::TrianglePipelineCreateInfo pipeline_info
 		{
@@ -202,7 +229,7 @@ namespace Sandbox {
 		m_Renderer->bind_uniform_sets(
 			{
 				m_UniformManager.set(0),
-				m_UniformManager.set(1 + m_TextureIndex)
+				m_UniformManager.set(1)
 			},
 			m_Pipeline.native()
 		);
@@ -229,6 +256,7 @@ namespace Sandbox {
 		model1 = glm::scale(model1, m_Instance1_Scale);
 
 		m_InstanceBuffer->set_subdata(&instanceBufferData, m_Renderer->current_frame_index());
+		m_UniformBuffer->set_subdata(&m_TextureIndex, m_Renderer->current_frame_index());
 
 		m_Renderer->bind_vertex_buffer(m_VertexBuffer);
 		m_Renderer->bind_index_buffer(m_IndexBuffer);

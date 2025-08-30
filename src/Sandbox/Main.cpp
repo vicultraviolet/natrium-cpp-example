@@ -6,9 +6,19 @@ int main(int argc, char* argv[])
 	Na::ContextInitInfo context_info{};
 	Na::Context context(context_info);
 
+	Na::Graphics::UniformIndexingInfo uniform_indexing_info;
+
+	uniform_indexing_info.array_types.insert(Na::Graphics::UniformType::Texture);
+	uniform_indexing_info.runtime_array = true;
+
 	Na::Graphics::DeviceInitInfo device_info
 	{
-		.backend = Na::Graphics::DeviceBackend::Vulkan
+		.backend = Na::Graphics::DeviceBackend::Vulkan,
+		.required_extensions = {
+			Na::Graphics::DeviceExtension::Swapchain,
+			Na::Graphics::DeviceExtension::UniformIndexing
+		},
+		.uniform_indexing_info = std::move(uniform_indexing_info)
 	};
 	auto device = Na::Graphics::Device::Make(device_info);
 
