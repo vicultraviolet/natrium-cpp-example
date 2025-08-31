@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
 	).value();
 
 	// if file is not found, it will be created with default settings
-	auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json").value();
+	auto renderer_settings = asset_manager.load_renderer_settings("renderer_settings.json").value();
 
 	// sets anisotropy limit to the maximum supported by the GPU
 	renderer_settings->set_max_anisotropy(device->limits()->max_anisotropy());
@@ -105,7 +105,7 @@ int main(int argc, char* argv[])
 		renderer->bind_vertex_buffer(vbo);
 		renderer->bind_index_buffer(ibo);
 
-		renderer->draw_indexed(k_Indices.size());
+		renderer->draw_indexed((u32)k_Indices.size());
 
 		renderer->end_render_pass();
 		renderer->end_frame();

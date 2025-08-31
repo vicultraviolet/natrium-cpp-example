@@ -25,7 +25,7 @@ namespace Sandbox {
 	{
 		Na::AssetManager& asset_manager = Na::Application::Get().asset_manager();
 
-		auto renderer_settings = asset_manager.load_asset<Na::RendererSettingsAsset>("renderer_settings.json").value();
+		auto renderer_settings = asset_manager.load_renderer_settings("renderer_settings.json").value();
 
 		auto img1 = asset_manager.load_asset<Na::ImageAsset>("assets/texture.png").value();
 		auto img2 = asset_manager.load_asset<Na::ImageAsset>("assets/texture2.png").value();
