@@ -19,11 +19,11 @@ namespace Sandbox {
 	MainLayer::MainLayer(i64 priority)
 	: Na::Layer(priority),
 	  m_Camera(glm::vec3(2.5f, 1.0f, 2.5f)),
-	  m_MainWindow(Na::Application::Get().window()),
-	  m_Renderer(Na::Application::Get().renderer()),
-	  m_RenderTarget(Na::Application::Get().render_target())
+	  m_MainWindow(Na::HL::App::Get().window()),
+	  m_Renderer(Na::HL::App::Get().renderer()),
+	  m_RenderTarget(Na::HL::App::Get().render_target())
 	{
-		Na::AssetManager& asset_manager = Na::Application::Get().asset_manager();
+		Na::AssetManager& asset_manager = Na::HL::App::Get().asset_manager();
 
 		auto renderer_settings = asset_manager.load_renderer_settings("renderer_settings.json").value();
 
@@ -172,7 +172,7 @@ namespace Sandbox {
 		{
 			m_MainWindow->capture_mouse();
 
-			if (auto imgui_layer = Na::Application::Get().imgui_layer().lock())
+			if (auto imgui_layer = Na::HL::App::Get().imgui_layer().lock())
 				imgui_layer->set_enabled(false);
 
 			m_Camera.on_mouse_capture(glm::vec2(m_Input.mouse_x(), m_Input.mouse_y()));
@@ -188,7 +188,7 @@ namespace Sandbox {
 
 			m_Camera.on_mouse_release();
 
-			if (auto imgui_layer = Na::Application::Get().imgui_layer().lock())
+			if (auto imgui_layer = Na::HL::App::Get().imgui_layer().lock())
 				imgui_layer->set_enabled(true);
 
 			break;
@@ -269,7 +269,7 @@ namespace Sandbox {
 	{
 		ImGui::Begin("Debug");
 
-		ImGui::Text("Average FPS: %llu", Na::Application::Get().average_fps());
+		ImGui::Text("Average FPS: %llu", Na::HL::App::Get().average_fps());
 
 		ImGui::End();
 
