@@ -7,6 +7,7 @@
 #include <Natrium/HL/Renderer_HL.hpp>
 #include <Natrium/HL/UniformManager_HL.hpp>
 #include <Natrium/HL/Pipeline_HL.hpp>
+#include <Natrium/HL/DeviceMesh_HL.hpp>
 
 #include <Natrium/Assets/AssetManager.hpp>
 
@@ -14,16 +15,11 @@ using namespace Na::Primitives;
 
 constexpr glm::vec4 k_ClearColor{ 0.1f, 0.08f, 0.15f, 1.0f };
 
-struct VertexData {
-	glm::vec3 pos;
-	glm::vec2 uv_coord;
-};
-
-static constexpr std::array<VertexData, 4> k_Vertices = {
-	VertexData{ glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 1.0f) },
-	VertexData{ glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 1.0f) },
-	VertexData{ glm::vec3( 0.5f,  0.5f, 0.0f), glm::vec2(1.0f, 0.0f) },
-	VertexData{ glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec2(0.0f, 0.0f) }
+static constexpr std::array<Na::Vertex, 4> k_Vertices = {
+	Na::Vertex{ glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 1.0f) },
+	Na::Vertex{ glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 1.0f) },
+	Na::Vertex{ glm::vec3( 0.5f,  0.5f, 0.0f), glm::vec2(1.0f, 0.0f) },
+	Na::Vertex{ glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec2(0.0f, 0.0f) }
 };
 
 static constexpr std::array<u32, 6> k_Indices = {
@@ -72,16 +68,10 @@ int main(int argc, char* argv[])
 	auto display = Na::HL::Display::Make(window, renderer_settings);
 	renderer->bind_render_target(display);
 
-	Na::Graphics::VertexAttributes vertex_attributes(2);
-
-	vertex_attributes.add(0, Na::Graphics::VertexAttributeType::Vec3); // position
-	vertex_attributes.add(1, Na::Graphics::VertexAttributeType::Vec2); // uv coord
-
-	auto vbo = Na::Graphics::MakeVertexBuffer(k_Vertices.size() * sizeof(VertexData));
-	vbo->set_data(k_Vertices.data());
-
-	auto ibo = Na::Graphics::MakeIndexBuffer((u32)k_Indices.size());
-	ibo->set_data(k_Indices.data());
+	Na::HL::DeviceMesh mesh(
+		k_Vertices.data(), (u32)k_Vertices.size(),
+		k_Indices.data(), (u32)k_Indices.size()
+	);
 
 	Na::HL::UniformManager uniform_manager;
 
@@ -114,7 +104,7 @@ int main(int argc, char* argv[])
 	{
 		.render_target = display,
 		.shaders = { vs, fs },
-		.vertex_attributes = &vertex_attributes,
+		.vertex_attributes = &Na::HL::DeviceMesh::GetVertexAttributes(),
 		.uniform_set_layouts = &uniform_manager.set_layouts()
 	};
 	Na::HL::Pipeline pipeline(pipeline_info);
@@ -147,10 +137,10 @@ int main(int argc, char* argv[])
 		renderer->bind_pipeline(pipeline.native());
 		renderer->bind_uniform_set(uniform_manager.set(0), pipeline.native());
 
-		renderer->bind_vertex_buffer(vbo);
-		renderer->bind_index_buffer(ibo);
+		renderer->bind_vertex_buffer(mesh.vertex_buffer());
+		renderer->bind_index_buffer(mesh.index_buffer());
 
-		renderer->draw_indexed((u32)k_Indices.size());
+		renderer->draw_indexed(mesh.index_count());
 
 		renderer->end_render_pass();
 		renderer->end_frame();

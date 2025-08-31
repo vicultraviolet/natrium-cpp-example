@@ -29,9 +29,7 @@ namespace Sandbox {
 		Na::HL::UniformManager m_UniformManager;
 		Na::HL::Pipeline m_Pipeline;
 
-		Na::UniqueRef<Na::Graphics::Buffer> m_VertexBuffer;
-		Na::UniqueRef<Na::Graphics::Buffer> m_IndexBuffer;
-		u32 m_IndexCount = 0;
+		Na::HL::DeviceMesh m_Mesh;
 
 		Na::UniqueRef<Na::Graphics::Buffer>  m_UniformBuffer;
 		Na::UniqueRef<Na::Graphics::Buffer>  m_InstanceBuffer;

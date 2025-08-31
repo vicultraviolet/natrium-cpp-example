@@ -30,7 +30,7 @@ namespace Sandbox {
 		auto img1 = asset_manager.load_asset<Na::ImageAsset>("assets/texture.png").value();
 		auto img2 = asset_manager.load_asset<Na::ImageAsset>("assets/texture2.png").value();
 
-		auto model = asset_manager.load_asset<Na::ModelAsset>("assets/model.obj").value();
+		auto host_mesh = asset_manager.load_asset<Na::HostMesh>("assets/model.obj").value();
 
 		auto vs = asset_manager.load_shader(
 			"assets/shaders/sandbox_vertex.glsl",
@@ -47,13 +47,7 @@ namespace Sandbox {
 		);
 		vs->set_push_constant_size((u32)m_Camera.matrices().size());
 
-		m_VertexBuffer = Na::Graphics::MakeVertexBuffer(model->vertex_data_size());
-		m_VertexBuffer->set_data(model->vertices().ptr());
-
-		m_IndexBuffer = Na::Graphics::MakeIndexBuffer(model->index_count());
-		m_IndexBuffer->set_data(model->indices().ptr());
-
-		m_IndexCount = model->index_count();
+		m_Mesh = Na::HL::DeviceMesh(host_mesh);
 
 		m_UniformManager.init_layout(
 			Na::HL::UniformSetIndices::k_Global, // set 0
@@ -74,7 +68,8 @@ namespace Sandbox {
 		m_UniformManager.init_layout(
 			Na::HL::UniformSetIndices::k_Material, // set 1
 			{
-				Na::Graphics::UniformBinding{
+				Na::Graphics::UniformBinding
+				{
 					.binding = 0,
 					.type = Na::Graphics::UniformType::Texture,
 					.shader_stage = Na::Graphics::ShaderStage::Fragment,
@@ -140,7 +135,7 @@ namespace Sandbox {
 		{
 			.render_target = m_RenderTarget,
 			.shaders = { vs, fs },
-			.vertex_attributes = &Na::ModelAsset::VertexAttributes(),
+			.vertex_attributes = &Na::HostMesh::GetVertexAttributes(),
 			.uniform_set_layouts = &m_UniformManager.set_layouts()
 		};
 		m_Pipeline = Na::HL::Pipeline(pipeline_info);
@@ -265,9 +260,9 @@ namespace Sandbox {
 		m_InstanceBuffer->set_subdata(&instanceBufferData, m_Renderer->current_frame_index());
 		m_UniformBuffer->set_subdata(&m_TextureIndex, m_Renderer->current_frame_index());
 
-		m_Renderer->bind_vertex_buffer(m_VertexBuffer);
-		m_Renderer->bind_index_buffer(m_IndexBuffer);
-		m_Renderer->draw_indexed(m_IndexCount, instanceBufferData.count());
+		m_Renderer->bind_vertex_buffer(m_Mesh.vertex_buffer());
+		m_Renderer->bind_index_buffer(m_Mesh.index_buffer());
+		m_Renderer->draw_indexed(m_Mesh.index_count(), instanceBufferData.count());
 	}
 
 	void MainLayer::imgui_draw(void)
