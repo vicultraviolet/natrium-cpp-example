@@ -34,8 +34,8 @@ namespace Sandbox {
 		Na::UniqueRef<Na::Graphics::Buffer>  m_UniformBuffer;
 		Na::UniqueRef<Na::Graphics::Buffer>  m_InstanceBuffer;
 
-		Na::UniqueRef<Na::Graphics::Texture> m_Texture;
-		Na::UniqueRef<Na::Graphics::Texture> m_Texture2;
+		Na::HL::Texture m_Texture;
+		Na::HL::Texture m_Texture2;
 
 		i32 m_TextureIndex = 0;
 

@@ -27,8 +27,8 @@ namespace Sandbox {
 
 		auto renderer_settings = asset_manager.load_renderer_settings("renderer_settings.json").value();
 
-		auto img1 = asset_manager.load_asset<Na::ImageAsset>("assets/texture.png").value();
-		auto img2 = asset_manager.load_asset<Na::ImageAsset>("assets/texture2.png").value();
+		auto img1 = asset_manager.load_asset<Na::HostImage>("assets/texture.png").value();
+		auto img2 = asset_manager.load_asset<Na::HostImage>("assets/texture2.png").value();
 
 		auto host_mesh = asset_manager.load_asset<Na::HostMesh>("assets/model.obj").value();
 
@@ -93,8 +93,11 @@ namespace Sandbox {
 		);
 		m_InstanceBuffer->map();
 
-		m_Texture = Na::Graphics::Texture::Make(img1, renderer_settings);
-		m_Texture2 = Na::Graphics::Texture::Make(img2, renderer_settings);
+		m_Texture = Na::HL::Texture(renderer_settings, img1->width(), img1->height());
+		m_Texture.set_data(img1);
+
+		m_Texture2 = Na::HL::Texture(renderer_settings, img2->width(), img2->height());
+		m_Texture2.set_data(img2);
 
 		m_UniformManager.create_set(
 			Na::HL::UniformSetIndices::k_Global, // set 0
@@ -120,13 +123,13 @@ namespace Sandbox {
 			m_Renderer
 		);
 
-		Na::View<const Na::Graphics::Texture> textures[2] = { m_Texture, m_Texture2 };
+		Na::Graphics::UniformSetTextureInfo texture_infos[2] = { m_Texture, m_Texture2 };
 
 		Na::Graphics::UniformSetTextureBindingInfo2 texture_binding_info;
 
 		texture_binding_info.binding = 0;
 
-		texture_binding_info.textures = textures;
+		texture_binding_info.texture_infos = texture_infos;
 		texture_binding_info.texture_count = 2;
 
 		m_UniformManager.set(1)->bind_array(texture_binding_info);
