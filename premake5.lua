@@ -10,5 +10,7 @@ workspace "NatriumExample"
 
     debugdir "%{wks.location}"
 
+NatriumDir = "%{wks.location}/natrium-cpp/"
+
 include "natrium-cpp/Natrium-Premake.lua"
 include "src/Examples-Premake.lua"

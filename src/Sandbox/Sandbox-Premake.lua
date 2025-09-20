@@ -18,14 +18,15 @@ project "Sandbox"
 
     includedirs {
         "./",
-        "%{wks.location}/natrium-cpp/include/",
-        "%{wks.location}/natrium-cpp/%{IncludeDirectories.fmt}",
-        "%{wks.location}/natrium-cpp/%{IncludeDirectories.glm}",
-        "%{wks.location}/natrium-cpp/%{IncludeDirectories.imgui}",
-        "%{wks.location}/natrium-cpp/%{IncludeDirectories.nlohmann_json}",
-        "%{wks.location}/natrium-cpp/%{IncludeDirectories.stduuid}",
-        "%{wks.location}/natrium-cpp/dependencies/"
+        "%{NatriumDir}include/",
+        "%{NatriumDir}%{IncludeDirectories.fmt}",
+        "%{NatriumDir}%{IncludeDirectories.glm}",
+        "%{NatriumDir}%{IncludeDirectories.imgui}",
+        "%{NatriumDir}%{IncludeDirectories.nlohmann_json}",
+        "%{NatriumDir}%{IncludeDirectories.stduuid}",
+        "%{NatriumDir}dependencies/"
     }
+
     links {
         "Natrium",
         "%{Libraries.tiny_obj_loader}",
@@ -36,22 +37,35 @@ project "Sandbox"
     }
 
     prebuildcommands {
-        "{COPYDIR} %{wks.location}/natrium-cpp/assets/ %{wks.location}/assets/engine/"
+        "{COPYDIR} %{NatriumDir}assets/ %{wks.location}/assets/engine/"
     }
 
     filter "system:linux"
         links {
             "vulkan",
-            "shaderc_combined"
+            "shaderc_combined",
+            "%{Libraries.openal}",
+            "%{Libraries.libsndfile}"
         }
 
         defines { "NA_PLATFORM_LINUX" }
 
     filter "system:windows"
-        includedirs "%{IncludeDirectories.vk}" 
-		libdirs "%{LibraryDirectories.vk}" 
+        includedirs {
+            "%{IncludeDirectories.vk}",
+            "%{NatriumDir}%{IncludeDirectories.libsndfile}",
+            "%{NatriumDir}%{IncludeDirectories.openal}" 
+        }
 
-        links "vulkan-1"
+        libdirs {
+            "%{LibraryDirectories.vk}",
+            "%{NatriumDir}%{LibraryDirectories.libsndfile}",
+            "%{NatriumDir}%{LibraryDirectories.openal}" 
+        }
+
+        links {
+            "vulkan-1"
+        }
 
         defines {
             "NA_PLATFORM_WINDOWS",
@@ -75,8 +89,3 @@ project "Sandbox"
         optimize "speed"
         symbols "off"
         defines { "NA_CONFIG_DIST" }
-
-    filter { "system:windows", "configurations:dbg" }
-        links "shaderc_combinedd"
-    filter { "system:windows", "configurations:rel or dist" }
-        links "shaderc_combined"

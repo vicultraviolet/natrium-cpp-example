@@ -8,6 +8,7 @@
 #include <Natrium/HL/UniformManager_HL.hpp>
 #include <Natrium/HL/Pipeline_HL.hpp>
 #include <Natrium/HL/DeviceMesh_HL.hpp>
+#include <Natrium/HL/Texture_HL.hpp>
 
 #include <Natrium/Assets/AssetManager.hpp>
 
@@ -53,7 +54,7 @@ int main(int argc, char* argv[])
 		Na::Graphics::ShaderStage::Fragment
 	).value();
 
-	auto img = asset_manager.load_asset<Na::ImageAsset>("assets/vulkan.png"s).value();
+	auto img = asset_manager.load_asset<Na::HostImage>("assets/vulkan.png").value();
 
 	// if file is not found, it will be created with default settings
 	auto renderer_settings = asset_manager.load_renderer_settings("renderer_settings.json").value();
@@ -86,7 +87,12 @@ int main(int argc, char* argv[])
 		}
 	);
 
-	auto texture = Na::Graphics::Texture::Make(img, renderer->settings());
+	Na::HL::Texture texture(
+		renderer->settings(),
+		img->width(),
+		img->height()
+	);
+	texture.set_data(img);
 
 	uniform_manager.create_set(
 		0, // layout index
@@ -96,7 +102,7 @@ int main(int argc, char* argv[])
 	Na::Graphics::UniformSetTextureBindingInfo texture_binding_info;
 
 	texture_binding_info.binding = 0;
-	texture_binding_info.texture = texture;
+	texture_binding_info.texture_info = texture;
 
 	uniform_manager.set(0)->bind(texture_binding_info);
 

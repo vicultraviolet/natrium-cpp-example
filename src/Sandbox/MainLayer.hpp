@@ -41,6 +41,9 @@ namespace Sandbox {
 
 		Na::Camera3dData m_Camera;
 
+		Na::Audio::Buffer m_AudioBuffer;
+		Na::Audio::Source m_AudioSource;
+
 		glm::vec3 m_Instance0_Position{ -1.0f,  0.5f,  0.2f };
 		glm::vec3 m_Instance0_Scale{ 1.0f,  1.0f,  1.0f };
 		glm::vec3 m_Instance1_Position{ 1.0f,  0.5f,  0.7f };

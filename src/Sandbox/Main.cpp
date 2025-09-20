@@ -22,6 +22,10 @@ int main(int argc, char* argv[])
 	};
 	auto device = Na::Graphics::Device::Make(device_info);
 
+	Na::Audio::ContextInitInfo audio_info{};
+	Na::Audio::Context audio_context(audio_info);
+	audio_context.bind();
+
 	Na::HL::AppSettings app_settings
 	{
 		.window_width = 1280,

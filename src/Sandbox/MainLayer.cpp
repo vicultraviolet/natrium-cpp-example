@@ -42,6 +42,15 @@ namespace Sandbox {
 			Na::Graphics::ShaderStage::Fragment
 		).value();
 
+		auto audio = asset_manager.load_asset<Na::Audio::Wav>("assets/bell_mono.wav").value();
+
+		Na::Audio::Context::GetBound()->listener().set_position(m_Camera.pos());
+
+		m_AudioBuffer = Na::Audio::Buffer(audio);
+		m_AudioSource = Na::Audio::Source(Na::Audio::SourceCreateInfo{});
+
+		m_AudioSource.attach_buffer(m_AudioBuffer);
+
 		m_Camera.set_aspect_ratio(
 			(float)m_MainWindow->width() / (float)m_MainWindow->height()
 		);
@@ -221,7 +230,17 @@ namespace Sandbox {
 				move.x = -amount;
 
 			m_Camera.move(move);
+
+			Na::Audio::Context::GetBound()->listener().set_position(m_Camera.pos());
 		}
+
+		glm::vec3 forward = glm::normalize(m_Camera.eye() - m_Camera.pos());
+		glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
+		glm::vec3 up = glm::normalize(glm::cross(right, forward));
+
+		Na::Audio::Context::GetBound()->listener().set_orientation({ forward, up });
+
+		m_AudioSource.set_position(m_Instance0_Position);
 	}
 
 	void MainLayer::draw(void)
@@ -274,9 +293,14 @@ namespace Sandbox {
 
 		ImGui::Text("Average FPS: %llu", Na::HL::App::Get().average_fps());
 
+		ImGui::Separator();
+
+		ImGui::Text("Camera's Position: %f, %f, %f", m_Camera.pos().x, m_Camera.pos().y, m_Camera.pos().z);
+		ImGui::Text("Camera's Eye: %f, %f, %f", m_Camera.eye().x, m_Camera.eye().y, m_Camera.eye().z);
+
 		ImGui::End();
 
-		ImGui::Begin("Instance Data");
+		ImGui::Begin("window");
 
 		ImGui::DragFloat3("Model 0 Position", glm::value_ptr(m_Instance0_Position), 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat3("Model 0 Scale", glm::value_ptr(m_Instance0_Scale), 0.01f, -10.0f, 10.0f);
@@ -284,8 +308,15 @@ namespace Sandbox {
 		ImGui::DragFloat3("Model 1 Position", glm::value_ptr(m_Instance1_Position), 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat3("Model 1 Scale", glm::value_ptr(m_Instance1_Scale), 0.01f, -10.0f, 10.0f);
 
+		ImGui::Separator();
+
 		ImGui::RadioButton("Texture 1", &m_TextureIndex, 0); ImGui::SameLine();
 		ImGui::RadioButton("Texture 2", &m_TextureIndex, 1);
+
+		ImGui::Separator();
+
+		if (ImGui::Button("Play Sound", { 140, 40 }))
+			m_AudioSource.play();
 
 		ImGui::End();
 	}

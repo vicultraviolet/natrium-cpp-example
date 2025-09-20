@@ -1,3 +1,5 @@
+group "Examples"
+
 include "Logging/Logging-Premake.lua"
 include "Ref/Ref-Premake.lua"
 include "Arena/Arena-Premake.lua"
@@ -9,4 +11,7 @@ include "IndexBuffer/IndexBuffer-Premake.lua"
 include "Texture/Texture-Premake.lua"
 include "Camera/Camera-Premake.lua"
 include "Compute/Compute-Premake.lua"
+
+group ""
+
 include "Sandbox/Sandbox-Premake.lua"
