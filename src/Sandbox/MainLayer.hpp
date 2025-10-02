@@ -29,13 +29,13 @@ namespace Sandbox {
 		Na::HL::UniformManager m_UniformManager;
 		Na::HL::Pipeline m_Pipeline;
 
-		Na::HL::DeviceMesh m_Mesh;
+		Na::Ref<Na::HL::DeviceMesh> m_Mesh;
 
-		Na::UniqueRef<Na::Graphics::Buffer>  m_UniformBuffer;
-		Na::UniqueRef<Na::Graphics::Buffer>  m_InstanceBuffer;
+		Na::UniqueRef<Na::Graphics::Buffer> m_UniformBuffer;
+		Na::UniqueRef<Na::Graphics::Buffer> m_InstanceBuffer;
 
-		Na::HL::Texture m_Texture;
-		Na::HL::Texture m_Texture2;
+		Na::Ref<Na::HL::Texture> m_Texture;
+		Na::Ref<Na::HL::Texture> m_Texture2;
 
 		i32 m_TextureIndex = 0;
 
@@ -44,10 +44,7 @@ namespace Sandbox {
 		Na::Audio::Buffer m_AudioBuffer;
 		Na::Audio::Source m_AudioSource;
 
-		glm::vec3 m_Instance0_Position{ -1.0f,  0.5f,  0.2f };
-		glm::vec3 m_Instance0_Scale{ 1.0f,  1.0f,  1.0f };
-		glm::vec3 m_Instance1_Position{ 1.0f,  0.5f,  0.7f };
-		glm::vec3 m_Instance1_Scale{ 0.5f,  0.5f,  0.5f };
+		Na::ECS::Transform3D m_Transform0, m_Transform1;
 	};
 
 	inline Na::Logger g_Logger{ "Sandbox" };

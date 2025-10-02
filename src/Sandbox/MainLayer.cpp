@@ -23,26 +23,31 @@ namespace Sandbox {
 	  m_Renderer(Na::HL::App::Get().renderer()),
 	  m_RenderTarget(Na::HL::App::Get().render_target())
 	{
-		Na::AssetManager& asset_manager = Na::HL::App::Get().asset_manager();
+		auto asset_manager = Na::AssetManager::Get();
 
-		auto renderer_settings = asset_manager.load_renderer_settings("renderer_settings.json").value();
+		auto renderer_settings = asset_manager->get_by_name<Na::RendererSettings>("renderer_settings");
 
-		auto img1 = asset_manager.load_asset<Na::HostImage>("assets/texture.png").value();
-		auto img2 = asset_manager.load_asset<Na::HostImage>("assets/texture2.png").value();
+		auto img1 = asset_manager->create_asset<Na::HostImage>("img1");
+		auto img2 = asset_manager->create_asset<Na::HostImage>("img2");
 
-		auto host_mesh = asset_manager.load_asset<Na::HostMesh>("assets/model.obj").value();
+		img1->load("assets/texture.png");
+		img2->load("assets/texture2.png");
 
-		auto vs = asset_manager.load_shader(
+		auto host_mesh = asset_manager->create_asset<Na::HostMesh>("host_mesh");
+		host_mesh->load("assets/model.obj");
+
+		auto vs = Na::Graphics::Shader::Make(
 			"assets/shaders/sandbox_vertex.glsl",
 			Na::Graphics::ShaderStage::Vertex
 		).value();
 
-		auto fs = asset_manager.load_shader(
+		auto fs = Na::Graphics::Shader::Make(
 			"assets/shaders/sandbox_fragment.glsl",
 			Na::Graphics::ShaderStage::Fragment
 		).value();
 
-		auto audio = asset_manager.load_asset<Na::Audio::Wav>("assets/bell_mono.wav").value();
+		auto audio = asset_manager->create_asset<Na::Audio::Wav>("bell");
+		audio->load("assets/bell_mono.wav");
 
 		Na::Audio::Context::GetBound()->listener().set_position(m_Camera.pos());
 
@@ -56,7 +61,7 @@ namespace Sandbox {
 		);
 		vs->set_push_constant_size((u32)m_Camera.matrices().size());
 
-		m_Mesh = Na::HL::DeviceMesh(host_mesh);
+		m_Mesh = asset_manager->create_asset<Na::HL::DeviceMesh>("mesh", host_mesh);
 
 		m_UniformManager.init_layout(
 			Na::HL::UniformSetIndices::k_Global, // set 0
@@ -92,21 +97,31 @@ namespace Sandbox {
 
 		m_UniformBuffer = Na::Graphics::MakeUniformBuffer(
 			sizeof(i32),
-			renderer_settings->max_frames_in_flight()
+			renderer_settings->max_frames_in_flight
 		);
 		m_UniformBuffer->map();
 
 		m_InstanceBuffer = Na::Graphics::MakeUniformBuffer(
 			instanceBufferData.size(),
-			renderer_settings->max_frames_in_flight()
+			renderer_settings->max_frames_in_flight
 		);
 		m_InstanceBuffer->map();
 
-		m_Texture = Na::HL::Texture(renderer_settings, img1->width(), img1->height());
-		m_Texture.set_data(img1);
+		m_Texture = asset_manager->create_asset<Na::HL::Texture>(
+			"texture1",
+			Na::HL::TextureDimensions(img1->width(), img1->height()),
+			renderer_settings,
+			true // saveable
+		); 
+		m_Texture->set_data(img1);
 
-		m_Texture2 = Na::HL::Texture(renderer_settings, img2->width(), img2->height());
-		m_Texture2.set_data(img2);
+		m_Texture2 = asset_manager->create_asset<Na::HL::Texture>(
+			"texture2",
+			Na::HL::TextureDimensions(img2->width(), img2->height()),
+			renderer_settings,
+			true // saveable
+		);
+		m_Texture2->set_data(img2);
 
 		m_UniformManager.create_set(
 			Na::HL::UniformSetIndices::k_Global, // set 0
@@ -132,7 +147,7 @@ namespace Sandbox {
 			m_Renderer
 		);
 
-		Na::Graphics::UniformSetTextureInfo texture_infos[2] = { m_Texture, m_Texture2 };
+		Na::Graphics::UniformSetTextureInfo texture_infos[2] = { *m_Texture, *m_Texture2 };
 
 		Na::Graphics::UniformSetTextureBindingInfo2 texture_binding_info;
 
@@ -152,7 +167,18 @@ namespace Sandbox {
 		};
 		m_Pipeline = Na::HL::Pipeline(pipeline_info);
 
+		asset_manager->save_registry();
+
 		g_Logger.print(Na::LogLevel::Trace, "MainLayer initialized!");
+
+		m_Transform0.set_position(glm::vec3(-1.0f, 0.5f, 0.2f));
+		m_Transform0.set_uniform_scale(1.0f);
+
+		m_Transform1.set_position(glm::vec3(1.0f, 0.5f, 0.7f));
+		m_Transform1.set_uniform_scale(0.5f);
+
+		m_Transform0.set_rotation(glm::angleAxis(glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
+		m_Transform1.set_rotation(glm::angleAxis(glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
 	}
 
 	void MainLayer::on_event(Na::Event& e)
@@ -240,7 +266,9 @@ namespace Sandbox {
 
 		Na::Audio::Context::GetBound()->listener().set_orientation({ forward, up });
 
-		m_AudioSource.set_position(m_Instance0_Position);
+		m_Transform1.rotate((float)dt * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+		m_AudioSource.set_position(m_Transform0.position());
 	}
 
 	void MainLayer::draw(void)
@@ -267,24 +295,15 @@ namespace Sandbox {
 			m_Pipeline.native()
 		);
 
-		glm::mat4& model0 = instanceBufferData.instance_data[0].model;
-		glm::mat4& model1 = instanceBufferData.instance_data[1].model;
-
-		model0 = glm::translate(glm::mat4(1.0f), m_Instance0_Position);
-		model0 = glm::rotate(model0, glm::radians(90.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
-		model0 = glm::scale(model0, m_Instance0_Scale);
-
-		model1 = glm::translate(glm::mat4(1.0f), m_Instance1_Position);
-		model1 = glm::rotate(model1, glm::radians(90.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
-		model1 = glm::rotate(model1, time * glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model1 = glm::scale(model1, m_Instance1_Scale);
+		instanceBufferData.instance_data[0].model = m_Transform0.mat();
+		instanceBufferData.instance_data[1].model = m_Transform1.mat();
 
 		m_InstanceBuffer->set_subdata(&instanceBufferData, m_Renderer->current_frame_index());
 		m_UniformBuffer->set_subdata(&m_TextureIndex, m_Renderer->current_frame_index());
 
-		m_Renderer->bind_vertex_buffer(m_Mesh.vertex_buffer());
-		m_Renderer->bind_index_buffer(m_Mesh.index_buffer());
-		m_Renderer->draw_indexed(m_Mesh.index_count(), instanceBufferData.count());
+		m_Renderer->bind_vertex_buffer(m_Mesh->vertex_buffer());
+		m_Renderer->bind_index_buffer(m_Mesh->index_buffer());
+		m_Renderer->draw_indexed(m_Mesh->index_count(), instanceBufferData.count());
 	}
 
 	void MainLayer::imgui_draw(void)
@@ -295,18 +314,51 @@ namespace Sandbox {
 
 		ImGui::Separator();
 
-		ImGui::Text("Camera's Position: %f, %f, %f", m_Camera.pos().x, m_Camera.pos().y, m_Camera.pos().z);
-		ImGui::Text("Camera's Eye: %f, %f, %f", m_Camera.eye().x, m_Camera.eye().y, m_Camera.eye().z);
+		ImGui::Text(
+			"Camera's Position: %f, %f, %f",
+			m_Camera.pos().x,
+			m_Camera.pos().y,
+			m_Camera.pos().z
+		);
+		ImGui::Text(
+			"Camera's Eye: %f, %f, %f",
+			m_Camera.eye().x,
+			m_Camera.eye().y,
+			m_Camera.eye().z
+		);
 
 		ImGui::End();
 
 		ImGui::Begin("window");
 
-		ImGui::DragFloat3("Model 0 Position", glm::value_ptr(m_Instance0_Position), 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Model 0 Scale", glm::value_ptr(m_Instance0_Scale), 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3(
+			"Model 0 Position",
+			glm::value_ptr(m_Transform0.position()),
+			0.01f, // speed
+			-10.0f, 10.0f
+		);
+		ImGui::DragFloat3(
+			"Model 0 Scale",
+			glm::value_ptr(m_Transform0.scale()),
+			0.01f, // speed
+			-10.0f, 10.0f
+		);
 
-		ImGui::DragFloat3("Model 1 Position", glm::value_ptr(m_Instance1_Position), 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat3("Model 1 Scale", glm::value_ptr(m_Instance1_Scale), 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat3(
+			"Model 1 Position",
+			glm::value_ptr(m_Transform1.position()),
+			0.01f, // speed
+			-10.0f, 10.0f
+		);
+		ImGui::DragFloat3(
+			"Model 1 Scale",
+			glm::value_ptr(m_Transform1.scale()),
+			0.01f, // speed
+			-10.0f, 10.0f
+		);
+
+		m_Transform0.mark_dirty();
+		m_Transform1.mark_dirty();
 
 		ImGui::Separator();
 

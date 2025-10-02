@@ -24,16 +24,28 @@ int main(int argc, char* argv[])
 
 	Na::Audio::ContextInitInfo audio_info{};
 	Na::Audio::Context audio_context(audio_info);
-	audio_context.bind();
+
+	Na::AssetManagerCreateInfo asset_info
+	{
+		.engine_assets_dir   = "assets/engine",
+		.shader_output_dir   = "bin/shaders",
+		.asset_registry_path = "assets/asset_registry.json"
+	};
+	Na::AssetManager asset_manager(asset_info);
+
+	auto renderer_settings = asset_manager.create_asset<Na::RendererSettings>("renderer_settings");
+	renderer_settings->load("renderer_settings.json");
+
+	renderer_settings->set_max_anisotropy(32767.0f);
+
+	renderer_settings->save("renderer_settings.json");
 
 	Na::HL::AppSettings app_settings
 	{
 		.window_width = 1280,
 		.window_height = 720,
 		.window_title = "Natrium Sandbox",
-		.engine_assets_directory = "assets/engine",
-		.shader_output_directory = "bin/shaders",
-		.renderer_settings_path = "renderer_settings.json"
+		.renderer_settings = renderer_settings
 	};
 	Na::HL::App app(app_settings);
 
